@@ -53,10 +53,9 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
       $fid = $icon[0];
       /** @var File $file */
       $file = File::load($fid);
-      $path = $file->getFileUri();
-      $icon_path = file_url_transform_relative(ImageStyle::load('social_pwa_icon_128')->buildUrl($path));
+      $path = $file->url();
 
-      $payload = json_encode(array('message'=> strip_tags($message_to_send), 'icon' => $icon_path));
+      $payload = json_encode(array('message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)));
 
       // Array of notifications.
       $notifications = array(
