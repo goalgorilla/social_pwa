@@ -25,7 +25,7 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
     $create_action = $activity_send_factory->createInstance('push_activity_send');
     $create_action->create($activity);
 
-    $uid = '7';
+    $uid = $activity->field_activity_recipient_user->target_id;
 
     if (!empty($uid)) {
       // Get subscription object of the selected user.
