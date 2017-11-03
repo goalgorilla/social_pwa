@@ -115,9 +115,59 @@ class BrowserDetector {
    *   A formatted string describing the client's device.
    */
   public function getFormattedDescription() {
-    $client = $this->dd->getClient();
-    $os = $this->dd->getOs();
+    // Try to get a formatted description of the brand and model.
+    $brand_model = $this->formatBrandModel($this->dd->getBrandName(), $this->dd->getModel());
+    if (!empty($brand_model)) {
+      return $brand_model;
+    }
 
+    // Try to get a formatted description of the OS in combination with the
+    // browser client.
+    $client_os = $this->formatClientOs($this->dd->getOs(), $this->dd->getClient());
+    if (!empty($client_os)) {
+      return $client_os;
+    }
+
+    return '';
+  }
+
+  /**
+   * Formats a description from the brand and model.
+   *
+   * @param string $brand
+   *   The brand of the device.
+   * @param string $model
+   *   The model of the device.
+   *
+   * @return string
+   *   A formatted description consisting of the brand and model.
+   */
+  protected function formatBrandModel($brand, $model) {
+    $description = '';
+
+    if (!empty($brand)) {
+      $description .= $brand;
+    }
+
+    if (!empty($model)) {
+      $description .= empty($description) ? $model : ' ' . $model;
+    }
+
+    return $description;
+  }
+
+  /**
+   * Formats a description from the OS and client.
+   *
+   * @param string $os
+   *   The OS information of the device.
+   * @param string $client
+   *   The client information coming from the browser.
+   *
+   * @return string
+   *   A formatted description consisting of the OS and the client.
+   */
+  protected function formatClientOs($os, $client) {
     // OS description.
     if (!empty($os['name'])) {
       $os_description = $os['name'];
@@ -137,24 +187,18 @@ class BrowserDetector {
     }
 
     // Formatted device name.
-    $name = '';
+    $description = '';
 
     // Add the OS description.
     if (!empty($os_description)) {
-      $name .= $os_description;
+      $description .= $os_description;
     }
     // Add the client description.
     if (!empty($client_description)) {
-      if (empty($name)) {
-        $name .= $client_description;
-      }
-      else {
-        $name .= ' - ' . $client_description;
-      }
+      $description .= empty($description) ? $client_description : ' - ' . $client_description;
     }
 
-
-    return $name;
+    return $description;
   }
 
 }
