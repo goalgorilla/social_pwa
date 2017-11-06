@@ -89,19 +89,13 @@ class BrowserDetector {
       case 'phablet':
         return 'tablet';
 
-      // TV's.
+      // TV's, consoles and desktop all map to the default: desktop.
       case 'tv':
       case 'console':
-        return 'tv';
-
-      // Other.
       case 'car browser':
       case 'smart display':
       case 'camera':
       case 'portable media player':
-        return 'other';
-
-      // Desktop.
       case 'desktop':
       case 'default':
         return 'desktop';
