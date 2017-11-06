@@ -1,21 +1,24 @@
 <?php
 
-/**
- * Controller to store the users subscription object containing
- * the endpoint, key and token inside the users_data object.
- */
-
 namespace Drupal\social_pwa\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 
-//TODO: 2. Extend subscription check. If user has new endpoint vendor (from newly supported browser), save it also.
-//TODO: 3. (Actually update if there is a newer than the old one!) -- Line 31?
-
+/**
+ * Class UserSubscriptionController.
+ *
+ * @package Drupal\social_pwa\Controller
+ */
 class UserSubscriptionController extends ControllerBase {
 
+  /**
+   * Save or update the subscription data for the user.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *    Return response.
+   */
   public function saveSubscription() {
     /** @var User $account */
     $account =  \Drupal::currentUser();
@@ -24,7 +27,8 @@ class UserSubscriptionController extends ControllerBase {
     // First fetch user data.
     $user_data = \Drupal::service('user.data')->get('social_pwa', $account->id(), 'subscription');
 
-    // Check if there already is an subscription object that matches this subscription object.
+    // Check if there already is an subscription object that
+    // matches this subscription object.
     if (!in_array($subscriptionData, $user_data)) {
       $user_data = NULL;
       $user_data[] = $subscriptionData;

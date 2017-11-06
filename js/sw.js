@@ -38,11 +38,11 @@ self.addEventListener('push', function (event) {
                 }
                 // The page is still open but unfocused.
                 else if (clientList.length > 0) {
-                    sendNotification(data.message, data.icon)
+                    sendNotification(data.message, data.icon);
                 }
                 // The page is closed, send a push!
                 else {
-                    sendNotification(data.message, data.icon)
+                    sendNotification(data.message, data.icon);
                 }
             })
         );

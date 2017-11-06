@@ -20,7 +20,7 @@ use Drupal\activity_send\Plugin\ActivitySendBase;
 class PushActivitySend extends ActivitySendBase {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function create($entity) {
     $data['entity_id'] = $entity->id();
