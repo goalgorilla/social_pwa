@@ -115,8 +115,8 @@ class BrowserDetector {
    *   A formatted string describing the client's device.
    */
   public function getFormattedDescription() {
-    // Try to get a formatted description of the brand and model.
-    $brand_model = $this->formatBrandModel($this->dd->getBrandName(), $this->dd->getModel());
+    // Try to get a formatted description of the brand, model and the client.
+    $brand_model = $this->formatBrandModel($this->dd->getBrandName(), $this->dd->getModel(), $this->dd->getClient());
     if (!empty($brand_model)) {
       return $brand_model;
     }
@@ -138,11 +138,13 @@ class BrowserDetector {
    *   The brand of the device.
    * @param string $model
    *   The model of the device.
+   * @param string $client
+   *   The client information coming from the browser.
    *
    * @return string
    *   A formatted description consisting of the brand and model.
    */
-  protected function formatBrandModel($brand, $model) {
+  protected function formatBrandModel($brand, $model, $client) {
     $description = '';
 
     if (!empty($brand)) {
@@ -150,7 +152,18 @@ class BrowserDetector {
     }
 
     if (!empty($model)) {
+      // Add an exception for the Apple TV.
+      // If we don't do this it'll show: Apple Apple TV.
+      if ($brand === 'Apple' && $model === 'Apple TV') {
+        $description = '';
+      }
+
       $description .= empty($description) ? $model : ' ' . $model;
+    }
+
+    // Add the client information if the brand and model are known.
+    if (!empty($description) && !empty($client['name'])) {
+      $description .= ' - ' . $client['name'];
     }
 
     return $description;
@@ -180,10 +193,6 @@ class BrowserDetector {
     // Format description.
     if (!empty($client['name'])) {
       $client_description = $client['name'];
-
-      if (!empty($client['version'])) {
-        $client_description .= ' ' . $client['version'];
-      }
     }
 
     // Formatted device name.
