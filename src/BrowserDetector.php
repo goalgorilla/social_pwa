@@ -68,8 +68,6 @@ class BrowserDetector {
    * Possible options:
    * - mobile
    * - table
-   * - tv
-   * - other
    * - desktop
    *
    * @return string
