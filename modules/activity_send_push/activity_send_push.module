@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ *   The activity_send_push.module file.
+ */
+
+use Drupal\activity_creator\ActivityInterface;
+use Drupal\message\Entity\Message;
+use Minishlink\WebPush\WebPush;
+use Drupal\file\Entity\File;
+
+/**
+ * Implements hook_ENTITY_TYPE_insert().
+ */
+function activity_send_push_activity_insert(ActivityInterface $activity) {
+
+  $destinations = $activity->getDestinations();
+  if (in_array('push', $destinations)) {
+    /* @var $activity_send_factory Drupal\activity_send\Plugin\ActivitySendManager */
+    $activity_send_factory = \Drupal::service('plugin.manager.activity_send.processor');
+    // Trigger the create action for entities.
+    /* @var $create_action \Drupal\activity_send_push\Plugin\ActivitySend\PushActivitySend */
+    $create_action = $activity_send_factory->createInstance('push_activity_send');
+    $create_action->create($activity);
+
+    $uid = $activity->field_activity_recipient_user->target_id;
+
+    if (!empty($uid)) {
+      // Get subscription object of the selected user.
+      $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+
+      // Get the endpoint, key and token from the subscription object.
+      $getUserEndpoint = $user_subscription[0]['endpoint'];
+      $getUserPublicKey = $user_subscription[0]['key'];
+      $getUserAuthToken = $user_subscription[0]['token'];
+
+      // Prepare the payload with the message.
+      $message_loaded = Message::load($activity->field_activity_message->target_id);
+      $message = $message_loaded->getText();
+
+      $message_to_send = '';
+      if (empty($message)) {
+        $message_to_send = 'test content';
+      }
+      if (!empty($message[0])) {
+        $message_to_send = $message[0];
+      }
+
+      $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+      // Get the file id and path.
+      $fid = $icon[0];
+      /** @var File $file */
+      $file = File::load($fid);
+      $path = $file->url();
+
+      $payload = json_encode(array('message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)));
+
+      // Array of notifications.
+      $notifications = array(
+        array(
+          'endpoint' => $getUserEndpoint,
+          'payload' => $payload,
+          'userPublicKey' => $getUserPublicKey,
+          'userAuthToken' => $getUserAuthToken,
+        )
+      );
+
+      $auth = array(
+        'VAPID' => array(
+          // Can be a "mailto:" or a website address.
+          'subject' => 'mailto:frankgraave@gmail.com',
+          // (recommended) uncompressed public key P-256 encoded in Base64-URL.
+          'publicKey' => 'BFhe5EFfcPn0XDnBAgNGPIqKocwI-yimiWet1fQXNbFtCwlRzmGVDTJoG8fjxjXEXmFqt8BzcaDtkFyTdUk2cb8',
+          // (recommended) in fact the secret multiplier of the private key
+          // encoded in Base64-URL
+          'privateKey' => '4iyfc5VbYDifpZ9170MY-xDXVjEmg3tOKRriFFl4Wxo',
+        ),
+      );
+
+      $webPush = new WebPush($auth);
+
+      foreach ($notifications as $notification) {
+        $webPush->sendNotification(
+          $notification['endpoint'],
+          $notification['payload'],
+          $notification['userPublicKey'],
+          $notification['userAuthToken']
+        );
+      }
+
+      $webPush->flush();
+
+    }
+  }
+
+}
