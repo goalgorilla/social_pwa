@@ -156,7 +156,6 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       'class' => ['form-horizontal'],
     ],
   ];
-
   // The push notification settings for the current device.
   $form['push_notifications']['current_device'] = [
     '#type' => 'details',
@@ -165,10 +164,15 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       'class' => ['form-fieldset'],
     ],
   ];
-  $form['push_notifications']['current_device']['test'] = [
-    '#markup' => $device_description
+  $form['push_notifications']['current_device']['current'] = [
+    '#type' => 'checkbox',
+    '#title' => $device_description,
+    // TODO: Check for subscription.
+    '#default_value' => TRUE,
+    '#attributes' => [
+      'data-switch' => TRUE,
+    ],
   ];
-
   // The push notification settings for other devices.
   $form['push_notifications']['other_devices'] = [
     '#type' => 'details',
@@ -180,7 +184,20 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   $form['push_notifications']['other_devices']['description'] = [
     '#markup' => '<p class="help-block">' . t('Push notifications are enabled on the following devices. The push notification setting will be reset if you remove the device below.') . '</p>',
   ];
-  $form['push_notifications']['other_devices']['ttet'] = [
-    '#markup' => $device_description
-  ];
+
+  // Current user.
+  $uid = Drupal::currentUser()->id();
+  // Get all the subscriptions for this user.
+  $user_subscriptions = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+
+  foreach ($user_subscriptions as $user_subscription) {
+    foreach ($user_subscription as $key => $value) {
+      if ($key != $device_description) {
+        $form['push_notifications']['other_devices'][$key] = [
+          '#markup' => $key
+        ];
+      }
+    }
+  }
+
 }
