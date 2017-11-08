@@ -16,6 +16,7 @@
 
             var isSubscribed = false;
             var swRegistration = null;
+            var enableDisablePushButton = drupalSettings.socialPwa.enableDisablePushButton;
 
             function urlBase64ToUint8Array(base64String) {
                 const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -55,6 +56,7 @@
 
                         if (isSubscribed) {
                             console.log('User is already subscribed.');
+                            return;
                         } else {
                             console.log('User is not subscribed yet. Trying to subscribe...');
                         }

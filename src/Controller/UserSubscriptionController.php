@@ -23,7 +23,6 @@ class UserSubscriptionController extends ControllerBase {
   public function saveSubscription() {
     // The user id.
     $uid = \Drupal::currentUser()->id();
-
     // The user agent.
     $ua = $_SERVER['HTTP_USER_AGENT'];
     // Get the data related to the user agent.
@@ -38,7 +37,7 @@ class UserSubscriptionController extends ControllerBase {
 
     // Check if there already is an subscription object that
     // matches this subscription object.
-    if (!in_array($subscriptionData[$browser], $user_data[$browser])) {
+    if (!in_array($subscriptionData[$browser], $user_data)) {
       // First we used to set user_data to NULL since we only wanted to update
       // but now we add every subscription for a new device or browser to the
       // user_data table.
