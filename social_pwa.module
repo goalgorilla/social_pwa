@@ -172,7 +172,7 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   if (!empty($user_subscriptions)) {
     $form['push_notifications']['current_device']['current'] = [
       '#type' => 'checkbox',
-      '#title' => '<span class="device-icon-' . $device_type . '"></span>' . $device_description,
+      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
       '#default_value' => TRUE,
       '#attributes' => [
         'data-switch' => TRUE,
