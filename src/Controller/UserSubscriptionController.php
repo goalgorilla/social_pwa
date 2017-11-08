@@ -21,7 +21,7 @@ class UserSubscriptionController extends ControllerBase {
    *    Return response.
    */
   public function saveSubscription() {
-    /** @var User $account */
+    // The user id.
     $uid = \Drupal::currentUser()->id();
 
     // The user agent.
