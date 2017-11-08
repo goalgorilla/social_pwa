@@ -22,7 +22,7 @@ class UserSubscriptionController extends ControllerBase {
    */
   public function saveSubscription() {
     /** @var User $account */
-    $uid = \Drupal::currentUser();
+    $uid = \Drupal::currentUser()->id();
 
     // The user agent.
     $ua = $_SERVER['HTTP_USER_AGENT'];

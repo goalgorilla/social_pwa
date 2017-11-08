@@ -36,6 +36,7 @@
                 //console.log('Service Worker and Push is supported.');
                 navigator.serviceWorker.register('/sw.js')
                     .then(function (swReg) {
+                        //console.log('Service Worker is registered', swReg);
                         swRegistration = swReg;
                         checkSubscription();
                     })
@@ -47,9 +48,11 @@
             }
 
             function checkSubscription() {
-                // Set the initial subscription value.
-                swRegistration.pushManager.getSubscription().then(function (subscription) {
+                // Set the initial subscription value
+                swRegistration.pushManager.getSubscription()
+                    .then(function (subscription) {
                         isSubscribed = !(subscription === null);
+
                         if (isSubscribed) {
                             console.log('User is already subscribed.');
                         } else {
@@ -80,7 +83,7 @@
                             console.log('Failed to subscribe the user: ', err);
                             $('.social_pwa--overlay').remove();
                         });
-                });
+                })
             }
 
             function updateSubscriptionOnServer(subscription) {
@@ -105,7 +108,7 @@
                         console.log('Something went wrong during subscription update.');
                     },
                     complete: function(msg) {
-                        console.log('Subscription added/updated to database.');
+                        console.log('Subscription added to database.');
                     }
                 });
                 return true;
@@ -115,14 +118,14 @@
                 var endpoint = pushSubscription.endpoint;
                 var subscriptionId = pushSubscription.subscriptionId;
 
-                // Fix Chrome < 45.
+                // Fix Chrome < 45
                 if (subscriptionId && endpoint.indexOf(subscriptionId) === -1) {
                     endpoint += '/' + subscriptionId;
                 }
                 return endpoint;
             }
 
-            // Install banner section below.
+            // Install banner section below
             window.addEventListener('beforeinstallprompt', function(e) {
                 console.log('[Main] beforeinstallprompt event fired.');
 
@@ -141,6 +144,6 @@
 
             });
         }
-    };
+    }
 
 })(jQuery, Drupal, drupalSettings);
