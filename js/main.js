@@ -16,7 +16,6 @@
 
             var isSubscribed = false;
             var swRegistration = null;
-            var enableDisablePushButton = drupalSettings.socialPwa.enableDisablePushButton;
 
             function urlBase64ToUint8Array(base64String) {
                 const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -60,12 +59,17 @@
                         } else {
                             console.log('User is not subscribed yet. Trying to subscribe...');
                         }
-                        subscribeUser();
+                      // subscribeUser();
                     });
             }
 
+            $('#edit-push-notifications-current-device-current').on('click', function() {
+              subscribeUser();
+            });
+
             // TODO: Rewrite the subscribeUser function because of vapid.
             function subscribeUser() {
+              console.log('subscribe event fired');
                 // Creating an overlay to provide focus to the permission prompt.
                 $('body').append('<div class="social_pwa--overlay" style="width: 100%; height: 100%; position: fixed; background-color: rgba(0,0,0,0.5); left: 0; top: 0; z-index: 999;"></div>');
                 const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
@@ -83,6 +87,7 @@
                         // Delete the overlay since the user has denied.
                         .catch(function (err) {
                             console.log('Failed to subscribe the user: ', err);
+                            $('#edit-push-notifications-current-device-current').text('Blocked');
                             $('.social_pwa--overlay').remove();
                         });
                 })

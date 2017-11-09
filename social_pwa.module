@@ -6,6 +6,7 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\social_pwa\BrowserDetector;
@@ -149,9 +150,8 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // Current user.
   $uid = Drupal::currentUser()->id();
   // Get all the subscriptions for this user.
-  $user_subscriptions = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
-
-  $form['#attached']['drupalSettings']['socialPwa']['enableDisablePushButton'] = TRUE;
+  $user_subscriptions = \Drupal::service('user.data')
+    ->get('social_pwa', $uid, 'subscription');
 
   $form['push_notifications'] = [
     '#type' => 'fieldset',
@@ -161,7 +161,9 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       'class' => ['form-horizontal'],
     ],
   ];
-  // The push notification settings for the current device.
+  $form['push_notifications']['description'] = [
+    '#markup' => t('Show notifications in the corner of your computer screen, even if Jungle Town is closed.')
+  ];
   $form['push_notifications']['current_device'] = [
     '#type' => 'details',
     '#title' => t('<h5>Current device</h5>'),
@@ -172,7 +174,10 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   if (!empty($user_subscriptions)) {
     $form['push_notifications']['current_device']['current'] = [
       '#type' => 'checkbox',
-      '#title' => '<span class="device-icon-' . $device_type . '"></span>' . $device_description,
+      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
+      // Set this to true through ajax callback in main.js when user declines.
+      '#disabled' => FALSE,
+      // Check on this value.
       '#default_value' => TRUE,
       '#attributes' => [
         'data-switch' => TRUE,
@@ -181,40 +186,46 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   }
   else {
     $form['push_notifications']['current_device']['current'] = [
-      '#type' => 'checkbox',
-      '#title' => '<span class="device-icon-' . $device_type . '"></span>' . $device_description,
-      '#description' => '<p class="help-block">' . t('Your browser does not support push notifications or you might have declined them.') . '</p>',
+      '#type' => 'button',
+      '#value' => t('Enable notifications'),
+      '#label' => t('Test label saying something.'),
+      '#disabled' => FALSE,
       '#default_value' => FALSE,
       '#attributes' => [
-        'data-switch' => TRUE,
+        ['btn', 'btn-primary'],
       ],
+      '#ajax' => [
+        'callback' => '',
+      ]
     ];
+    //    $form['push_notifications']['current_device']['blocked_notice'] = [
+    //      '#markup' => '<p class="help-block">' . t('You have denied receiving push notifications through your browser. If you want to know how to re-enable this, click here.') . '</p>',
+    //    ];
   }
-  // The push notification settings for other devices.
-  $form['push_notifications']['other_devices'] = [
-    '#type' => 'details',
-    '#title' => t('<h5>Other devices</h5>'),
-    '#attributes' => [
-      'class' => ['form-fieldset'],
-    ],
-  ];
-  $form['push_notifications']['other_devices']['description'] = [
-    '#markup' => '<p class="help-block">' . t('Push notifications are enabled on the following devices. The push notification setting will be reset if you remove the device below.') . '</p>',
-  ];
-
-  foreach ($user_subscriptions as $user_subscription) {
-    foreach ($user_subscription as $key => $value) {
-      // Do not show the current device as other device.
-      if ($key != $device_description) {
-        $form['push_notifications']['other_devices'][$key] = [
-          '#type' => 'button',
-          '#value' => $key,
-          '#attributes' => [
-            'class' => ['btn', 'btn-flat'],
-          ],
-        ];
-      }
-    }
-  }
-
+  //  // The push notification settings for other devices.
+  //  $form['push_notifications']['other_devices'] = [
+  //    '#type' => 'details',
+  //    '#title' => t('<h5>Other devices</h5>'),
+  //    '#attributes' => [
+  //      'class' => ['form-fieldset'],
+  //    ],
+  //  ];
+  //  $form['push_notifications']['other_devices']['description'] = [
+  //    '#markup' => '<p class="help-block">' . t('Push notifications are enabled on the following devices. The push notification setting will be reset if you remove the device below.') . '</p>',
+  //  ];
+  //
+  //  foreach ($user_subscriptions as $user_subscription) {
+  //    foreach ($user_subscription as $key => $value) {
+  //      // Do not show the current device as other device.
+  //      if ($key != $device_description) {
+  //        $form['push_notifications']['other_devices'][$key] = [
+  //          '#type' => 'button',
+  //          '#value' => $key,
+  //          '#attributes' => [
+  //            'class' => ['btn', 'btn-flat'],
+  //          ],
+  //        ];
+  //      }
+  //    }
+  //  }
 }
