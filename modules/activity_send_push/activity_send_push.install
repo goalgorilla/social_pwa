@@ -9,14 +9,43 @@
  * Implements hook_install().
  */
 function activity_send_push_install() {
-  // Set email destination to given message templates.
-//  $message_templates = ['create_post_profile'];
-//  foreach ($message_templates as $message_template) {
-//    $config_name = "message.template.{$message_template}";
-//    $config = \Drupal::service('config.factory')->getEditable($config_name);
-//    $activity_destinations = $config->get('third_party_settings.activity_logger.activity_destinations');
-//    $activity_destinations['email'] = 'email';
-//    $config->set('third_party_settings.activity_logger.activity_destinations', $activity_destinations);
-//    $config->save();
-//  }
+  // Set push destination to given message templates.
+  $message_templates = [
+    'create_comment_author_node_post',
+    'create_comment_following_node',
+    'create_comment_community_node',
+    'create_comment_group_node',
+    'create_comment_community_post',
+    'create_comment_group_post',
+    'create_comment_post_profile',
+    'create_event_community',
+    'create_event_group',
+    'create_like_node_or_post',
+    'create_mention_comment',
+    'create_mention_comment_stream',
+    'create_mention_post',
+    'create_mention_post_stream',
+    'create_post_group',
+    'create_post_community',
+    'create_post_profile',
+    'create_post_profile_stream',
+    'create_comment_reply_mention',
+    'create_comment_reply',
+    'create_topic_community',
+    'create_topic_group',
+    'create_comment_platform',
+    'create_group_platform',
+    'create_node_platform',
+    'create_post_platform',
+    'create_user_platform',
+  ];
+  foreach ($message_templates as $message_template) {
+    $config_name = 'message.template.' . $message_template;
+    /* @var \Drupal\Core\Config\ImmutableConfig $config */
+    $config = \Drupal::getContainer()->get('config.factory')->getEditable($config_name);
+    $activity_destinations = $config->get('third_party_settings.activity_logger.activity_destinations');
+    $activity_destinations['push'] = 'push';
+    $config->set('third_party_settings.activity_logger.activity_destinations', $activity_destinations);
+    $config->save();
+  }
 }
