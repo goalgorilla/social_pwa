@@ -2,9 +2,9 @@
 
 namespace Drupal\social_pwa\Controller;
 
+use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\social_pwa\BrowserDetector;
-use Drupal\user\Entity\User;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -47,6 +47,21 @@ class UserSubscriptionController extends ControllerBase {
       \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_data);
     }
     return new Response();
+  }
+
+  /**
+   * Remove the subscription from the database.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *    Returns an ajax response with redirect.
+   */
+  public function removeSubscription() {
+    // The user id.
+    $uid = \Drupal::currentUser()->id();
+    // Delete the subscription.
+    \Drupal::service('user.data')->delete('social_pwa', $uid, 'subscription');
+
+    return new AjaxResponse(NULL, 200);
   }
 
 }

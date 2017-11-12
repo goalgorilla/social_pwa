@@ -59,11 +59,11 @@
             isSubscribed = !(subscription === null);
 
             if (isSubscribed) {
-              console.log('[PWA] - User is already subscribed.');
+              console.log('[PWA] - User has already accepted push.');
               // return;
             } else {
               // TODO: Custom install prompt story.
-              console.log('[PWA] - User is not subscribed yet.');
+              console.log('[PWA] - User has not accepted push yet...');
             }
             // subscribeUser();
           });
@@ -94,7 +94,8 @@
             .catch(function (err) {
               // Delete the overlay since the user has denied.
               console.log('[PWA] - Failed to subscribe the user: ', err);
-              // TODO: Callback to make button disabled with message.
+              $('#edit-push-notifications-current-device-current').attr('checked', false, 'disabled', true);
+              $('.blocked-notice').html('You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.');
               $('.social_pwa--overlay').remove();
             });
         })
