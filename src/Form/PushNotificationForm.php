@@ -106,24 +106,22 @@ class PushNotificationForm extends FormBase {
       // Get subscription object of the selected user.
       $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
 
-      // Get the endpoint, key and token from the subscription object.
-      $getUserEndpoint = $user_subscription[0]['endpoint'];
-      $getUserPublicKey = $user_subscription[0]['key'];
-      $getUserAuthToken = $user_subscription[0]['token'];
-
       // Prepare the payload with the message.
       $message = $form_state->getValue('message');
       $payload = json_encode(array('message'=>$message));
 
       // Array of notifications.
-      $notifications = array(
-        array(
-          'endpoint' => $getUserEndpoint,
-          'payload' => $payload,
-          'userPublicKey' => $getUserPublicKey,
-          'userAuthToken' => $getUserAuthToken,
-        )
-      );
+      $notifications = [];
+      foreach ($user_subscription as $subscription) {
+        foreach ($subscription as $key => $value) {
+          $notifications[] = [
+            'endpoint' => $subscription[$key]['endpoint'],
+            'payload' => $payload,
+            'userPublicKey' => $subscription[$key]['key'],
+            'userAuthToken' => $subscription[$key]['token'],
+          ];
+        }
+      }
 
       $auth = array(
         'VAPID' => array(

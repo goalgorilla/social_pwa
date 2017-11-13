@@ -6,7 +6,6 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Url;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\social_pwa\BrowserDetector;
@@ -152,6 +151,13 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // Get all the subscriptions for this user.
   $user_subscriptions = \Drupal::service('user.data')
     ->get('social_pwa', $uid, 'subscription');
+
+  // Get the uploaded icon.
+  $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+
+  if ($icon === NULL || !isset($icon[0])) {
+    return;
+  }
 
   $form['push_notifications'] = [
     '#type' => 'fieldset',
