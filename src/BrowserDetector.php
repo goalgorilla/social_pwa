@@ -124,6 +124,23 @@ class BrowserDetector {
   }
 
   /**
+   * Describes what kind of browser and/or device the client is using.
+   *
+   * @return string
+   *   A formatted string describing the client's device.
+   */
+  public function getBrowserName() {
+    // Try to get a formatted description of the OS in combination with the
+    // browser client.
+    $browser = $this->dd->getClient();
+    if (!empty($browser['name'])) {
+      return $browser['name'];
+    }
+
+    return '';
+  }
+
+  /**
    * Formats a description from the brand and model.
    *
    * @param string $brand

@@ -27,14 +27,6 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
     $uid = $activity->field_activity_recipient_user->target_id;
 
     if (!empty($uid)) {
-      // Get subscription object of the selected user.
-      $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
-
-      // Get the endpoint, key and token from the subscription object.
-      $getUserEndpoint = $user_subscription[0]['endpoint'];
-      $getUserPublicKey = $user_subscription[0]['key'];
-      $getUserAuthToken = $user_subscription[0]['token'];
-
       // Prepare the payload with the message.
       $message_loaded = Message::load($activity->field_activity_message->target_id);
       $message = $message_loaded->getText();
@@ -54,29 +46,33 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
       $file = File::load($fid);
       $path = $file->url();
 
-      $payload = json_encode(array('message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)));
+      $payload = json_encode(['message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)]);
 
-      // Array of notifications.
-      $notifications = array(
-        array(
-          'endpoint' => $getUserEndpoint,
-          'payload' => $payload,
-          'userPublicKey' => $getUserPublicKey,
-          'userAuthToken' => $getUserAuthToken,
-        )
-      );
+      // Get subscription object of the selected user.
+      $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
 
-      $auth = array(
-        'VAPID' => array(
+      $notifications = [];
+      foreach ($user_subscription as $subscription) {
+        foreach ($subscription as $key => $value) {
+          $notifications[] = [
+            'endpoint' => $subscription[$key]['endpoint'],
+            'payload' => $payload,
+            'userPublicKey' => $subscription[$key]['key'],
+            'userAuthToken' => $subscription[$key]['token'],
+          ];
+        }
+      }
+
+      $auth = [
+        'VAPID' => [
           // Can be a "mailto:" or a website address.
           'subject' => 'mailto:frankgraave@gmail.com',
-          // (recommended) uncompressed public key P-256 encoded in Base64-URL.
+          // Uncompressed public key P-256 encoded in Base64-URL.
           'publicKey' => 'BFhe5EFfcPn0XDnBAgNGPIqKocwI-yimiWet1fQXNbFtCwlRzmGVDTJoG8fjxjXEXmFqt8BzcaDtkFyTdUk2cb8',
-          // (recommended) in fact the secret multiplier of the private key
-          // encoded in Base64-URL
+          // The secret multiplier of the private key encoded in Base64-URL.
           'privateKey' => '4iyfc5VbYDifpZ9170MY-xDXVjEmg3tOKRriFFl4Wxo',
-        ),
-      );
+        ],
+      ];
 
       $webPush = new WebPush($auth);
 

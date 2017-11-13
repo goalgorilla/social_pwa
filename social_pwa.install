@@ -5,8 +5,6 @@
  * Install and uninstall for the social_pwa module.
  */
 
-use Drupal\Core\Link;
-
 /**
  * Implements hook_uninstall().
  */
@@ -14,17 +12,27 @@ function social_pwa_uninstall() {
   $config_factory = Drupal::configFactory();
   // Delete all of the default settings.
   $config_factory->getEditable('social_pwa.settings')->delete();
-  // At uninstall, delete the image styles to prevent error when re-enabling this module.
-  $config_factory->getEditable('image.style.social_pwa_icon_128')->delete();
-  $config_factory->getEditable('image.style.social_pwa_icon_144')->delete();
-  $config_factory->getEditable('image.style.social_pwa_icon_152')->delete();
-  $config_factory->getEditable('image.style.social_pwa_icon_192')->delete();
-  drupal_set_message(t('The Social PWA module has been disabled and it\'s settings have been cleared.'));
+  // Define all the image styles that need to be removed.
+  $image_styles = [
+    'social_pwa_icon_128',
+    'social_pwa_icon_144',
+    'social_pwa_icon_152',
+    'social_pwa_icon_180',
+    'social_pwa_icon_192',
+    'social_pwa_icon_256',
+    'social_pwa_icon_512',
+  ];
+  // At uninstall, delete the image styles to
+  // prevent error when re-enabling this module.
+  foreach ($image_styles as $image_style) {
+    $config_factory->getEditable('image.style.' . $image_style)->delete();
+  }
+
+  drupal_set_message(t("The Social PWA module has been disabled and it's settings have been cleared."));
 }
 
 /**
  * Implements hook_install().
- *   Perform actions related to the installation of social_pwa.
  */
 function social_pwa_install() {
   drupal_set_message(t('The Social PWA module has been enabled.'));

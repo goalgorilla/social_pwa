@@ -36,19 +36,29 @@ class ManifestOutputController extends ControllerBase{
       $array = array_merge($first_array, $insert_array, $array);
     }
 
-    // Here I use the function above which has the following parameters:
-    // $array         (The array you want to manipulate)
-    // $position      (What key should be removed/replaced?)
-    // $insert_array  (What should be the replacement?).
-    array_insert($config, 3, array('icons' => array(
-      ['src' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_128')->buildUrl($path)), 'sizes' => '128x128', 'type' => 'image/png'],
-      ['src' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_144')->buildUrl($path)), 'sizes' => '144x144', 'type' => 'image/png'],
-      ['src' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_152')->buildUrl($path)), 'sizes' => '152x152', 'type' => 'image/png'],
-      ['src' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_192')->buildUrl($path)), 'sizes' => '192x192', 'type' => 'image/png']
-    )));
+    $image_styles = [
+      'social_pwa_icon_128' => '128x128',
+      'social_pwa_icon_144' => '144x144',
+      'social_pwa_icon_152' => '152x152',
+      'social_pwa_icon_180' => '180x180',
+      'social_pwa_icon_192' => '192x192',
+      'social_pwa_icon_256' => '256x256',
+      'social_pwa_icon_512' => '512x512',
+    ];
+
+    $image_style_url = [];
+    foreach ($image_styles as $key => $value) {
+      $image_style_url[] = [
+        'src' => file_url_transform_relative(ImageStyle::load($key)->buildUrl($path)),
+        'sizes' => $value,
+        'type' => 'image/png'
+      ];
+    }
+
+    // Insert the icons to the array.
+    array_insert($config, 3, ['icons' => $image_style_url]);
 
     // Array filter used to filter the "_core:" key from the output.
-    // So basically only the "_core:" key is not allowed through this filter.
     $allowed = [
       'name',
       'short_name',
@@ -66,7 +76,7 @@ class ManifestOutputController extends ControllerBase{
       ARRAY_FILTER_USE_KEY
     );
 
-    // Finally, after all the magic went down we return the manipulated and
+    // Finally, after all the magic went down we return a manipulated and
     // filtered array of our social_pwa.settings and output it to JSON format.
     return new JsonResponse($filtered);
   }

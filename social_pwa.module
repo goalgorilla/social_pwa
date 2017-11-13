@@ -5,8 +5,10 @@
  *   Generates and attaches the <meta> and <link> tags needed for the PWA inside the <head>
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\social_pwa\BrowserDetector;
 
 /**
  * Implements hook_page_attachments().
@@ -27,106 +29,190 @@ function social_pwa_page_attachments(array &$page) {
     print '<!-- Social PWA Module: Please upload an icon in my settings. Only then I can work properly! -->';
     return;
   }
-  else {
-    // Get the file id and path.
-    $fid = $icon[0];
-    /** @var File $file */
-    $file = File::load($fid);
-    $path = $file->getFileUri();
+  // Get the file id and path.
+  $fid = $icon[0];
+  /** @var File $file */
+  $file = File::load($fid);
+  $path = $file->getFileUri();
 
-    // LINK: Provide the icons.
-    $page['#attached']['html_head_link'][][] = [
-      // Icon support for Chrome on Android.
-      'rel' => 'icon',
-      'sizes' => '128x128',
-      'href' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_128')->buildUrl($path)),
-    ];
-    $page['#attached']['html_head_link'][][] = [
-      // Icon support for Safari on iOS.
-      'rel' => 'apple-touch-icon',
-      'sizes' => '144x144',
-      'href' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_144')->buildUrl($path)),
-    ];
+  // LINK: Provide the icons.
+  $page['#attached']['html_head_link'][][] = [
+    // Icon support for Chrome on Android.
+    'rel' => 'icon',
+    'sizes' => '256x256',
+    'href' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_256')->buildUrl($path)),
+  ];
+  $page['#attached']['html_head_link'][][] = [
+    // Icon support for Safari on iOS.
+    'rel' => 'apple-touch-icon',
+    'sizes' => '180x180',
+    'href' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_180')->buildUrl($path)),
+  ];
 
-    // Attach the main.js and sw.js in the render array
-    $page['#attached']['library'][] = 'social_pwa/main-js';
-    $page['#attached']['library'][] = 'social_pwa/service-worker';
+  // Attach the main.js and sw.js in the render array
+  $page['#attached']['library'][] = 'social_pwa/main-js';
+  $page['#attached']['library'][] = 'social_pwa/service-worker';
 
-    // Attach the generated data from /manifest.json
-    $page['#attached']['html_head_link'][][] = [
-      // Get the contents of the Manifest
-      'rel' => 'manifest',
-      'href' => '/manifest.json',
-    ];
+  // Attach the generated data from /manifest.json
+  $page['#attached']['html_head_link'][][] = [
+    // Get the contents of the Manifest
+    'rel' => 'manifest',
+    'href' => '/manifest.json',
+  ];
 
-    // META: Attach the meta tags.
-    $meta_pwa = [
-      // Chrome and Android Support: Add to home screen for Chrome on Android.
-      'mobile-web-app-capable' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'mobile-web-app-capable',
-          'content' => 'yes',
-        ],
+  // META: Attach the meta tags.
+  $meta_pwa = [
+    // Chrome and Android Support: Add to home screen for Chrome on Android.
+    'mobile-web-app-capable' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'mobile-web-app-capable',
+        'content' => 'yes',
       ],
-      'application-name' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'application-name',
-          'content' => \Drupal::config('social_pwa.settings')->get('short_name'),
-        ],
+    ],
+    'application-name' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'application-name',
+        'content' => \Drupal::config('social_pwa.settings')->get('short_name'),
       ],
-      // iOS Support: Add to home screen for Safari on iOS.
-      'apple-mobile-web-app-capable' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'apple-mobile-web-app-capable',
-          'content' => 'yes',
-        ],
+    ],
+    // iOS Support: Add to home screen for Safari on iOS
+    // content is set to 'no' to allow cookies.
+    'apple-mobile-web-app-capable' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'apple-mobile-web-app-capable',
+        'content' => 'no',
       ],
-      'apple-mobile-web-app-status-bar-style' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'apple-mobile-web-app-status-bar-style',
-            'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
-        ],
-      ],
-      'apple-mobile-web-app-title' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'apple-mobile-web-app-title',
-          'content' => \Drupal::config('social_pwa.settings')->get('short_name'),
-        ],
-      ],
-      // Windows Mobile Support: Tile icon and color for Windows Mobile.
-      'msapplication-TileImage' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'msapplication-TileImage',
-          'content' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_144')->buildUrl($path)),
-        ],
-      ],
-      'msapplication-TileColor' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'msapplication-TileColor',
+    ],
+    'apple-mobile-web-app-status-bar-style' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'apple-mobile-web-app-status-bar-style',
           'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
-        ],
       ],
-      // Color the status bar on mobile devices
-      'theme-color' => [
-        '#tag' => 'meta',
-        '#attributes' => [
-          'name' => 'theme-color',
-          'content' => \Drupal::config('social_pwa.settings')
-            ->get('theme_color'),
-        ],
+    ],
+    'apple-mobile-web-app-title' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'apple-mobile-web-app-title',
+        'content' => \Drupal::config('social_pwa.settings')->get('short_name'),
+      ],
+    ],
+    // Windows Mobile Support: Tile icon and color for Windows Mobile.
+    'msapplication-TileImage' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'msapplication-TileImage',
+        'content' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_144')->buildUrl($path)),
+      ],
+    ],
+    'msapplication-TileColor' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'msapplication-TileColor',
+        'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
+      ],
+    ],
+    // Color the status bar on mobile devices
+    'theme-color' => [
+      '#tag' => 'meta',
+      '#attributes' => [
+        'name' => 'theme-color',
+        'content' => \Drupal::config('social_pwa.settings')
+          ->get('theme_color'),
+      ],
+    ],
+  ];
+  // Generate all of the above.
+  foreach ($meta_pwa as $key => $value) {
+    $page['#attached']['html_head'][] = [$value, $key];
+  }
+
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+
+  // Get the device and subscription information about this user.
+  $useragent = $_SERVER['HTTP_USER_AGENT'];
+  // Browser detector.
+  $bd = new BrowserDetector($useragent);
+  // The device type for the icon.
+  $device_type = $bd->getDeviceType();
+  // The device/browser description.
+  $device_description = $bd->getFormattedDescription();
+
+  // Current user.
+  $uid = Drupal::currentUser()->id();
+  // Get all the subscriptions for this user.
+  $user_subscriptions = \Drupal::service('user.data')
+    ->get('social_pwa', $uid, 'subscription');
+
+  // Get the uploaded icon.
+  $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+
+  if ($icon === NULL || !isset($icon[0])) {
+    return;
+  }
+
+  $form['push_notifications'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Push notifications'),
+    '#tree' => TRUE,
+    '#attributes' => [
+      'class' => ['form-horizontal'],
+    ],
+  ];
+  $form['push_notifications']['description'] = [
+    '#markup' => t('Show notifications in the corner of your computer screen, even if the website is closed.'),
+  ];
+  $form['push_notifications']['current_device'] = [
+    '#type' => 'details',
+    '#title' => t('<h5>Current device</h5>'),
+    '#attributes' => [
+      'class' => ['form-fieldset'],
+    ],
+  ];
+  if (!empty($user_subscriptions)) {
+    // User has subscription, provide switch to turn it off.
+    $form['push_notifications']['current_device']['current_allowed'] = [
+      '#type' => 'checkbox',
+      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
+      '#disabled' => FALSE,
+      // Check on this value?.
+      '#default_value' => TRUE,
+      '#attributes' => [
+        'data-switch' => TRUE,
+      ],
+      '#ajax' => [
+        'callback' => 'Drupal\social_pwa\Controller\UserSubscriptionController::removeSubscription',
+        'progress' => ['type' => 'none'],
       ],
     ];
-    // Generate all of the above.
-    foreach ($meta_pwa as $key => $value) {
-      $page['#attached']['html_head'][] = [$value, $key];
-    }
+  }
+  else {
+    // User doesn't have subscription, provide switch to turn it on.
+    // This already triggers the prompt in the browser through JS.
+    $form['push_notifications']['current_device']['current'] = [
+      '#type' => 'checkbox',
+      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
+      '#disabled' => FALSE,
+      '#default_value' => FALSE,
+      '#attributes' => [
+        'data-switch' => TRUE,
+      ],
+    ];
+    $form['push_notifications']['current_device']['blocked_notice'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'div',
+      '#attributes' => [
+        'class' => ['help-block', 'blocked-notice'],
+      ]
+    ];
   }
 
 }
