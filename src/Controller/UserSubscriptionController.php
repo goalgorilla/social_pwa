@@ -58,8 +58,24 @@ class UserSubscriptionController extends ControllerBase {
   public function removeSubscription() {
     // The user id.
     $uid = \Drupal::currentUser()->id();
+    // The user agent.
+    $ua = $_SERVER['HTTP_USER_AGENT'];
+    // Get the data related to the user agent.
+    $bd = new BrowserDetector($ua);
+    // Get the device and browser formatted description.
+    $browser = $bd->getFormattedDescription();
+    // Get the user data.
+    $user_subscriptions = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+    // Loop through the subscriptions to see which one we need to remove.
+    foreach ($user_subscriptions as $key => $subscription) {
+      foreach ($subscription as $value) {
+        if (array_key_exists($browser, $subscription)) {
+          unset($user_subscriptions[$key]);
+        }
+      }
+    }
     // Delete the subscription.
-    \Drupal::service('user.data')->delete('social_pwa', $uid, 'subscription');
+    \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_subscriptions);
 
     return new AjaxResponse(NULL, 200);
   }

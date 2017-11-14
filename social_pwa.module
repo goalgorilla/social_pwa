@@ -177,7 +177,15 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       'class' => ['form-fieldset'],
     ],
   ];
-  if (!empty($user_subscriptions)) {
+
+  $current_browser_subscribed = TRUE;
+  foreach ($user_subscriptions as $subscription) {
+    if (array_key_exists($device_description, $subscription)) {
+      $current_browser_subscribed = FALSE;
+    }
+  }
+
+  if (!empty($user_subscriptions) && !$current_browser_subscribed) {
     // User has subscription, provide switch to turn it off.
     $form['push_notifications']['current_device']['current_allowed'] = [
       '#type' => 'checkbox',
