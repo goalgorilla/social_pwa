@@ -136,6 +136,9 @@ function social_pwa_page_attachments(array &$page) {
  * Implements hook_form_FORM_ID_alter().
  */
 function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'user_register_form') {
+    return;
+  }
 
   // Get the device and subscription information about this user.
   $useragent = $_SERVER['HTTP_USER_AGENT'];
@@ -178,14 +181,20 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
     ],
   ];
 
-  $current_browser_subscribed = TRUE;
-  foreach ($user_subscriptions as $subscription) {
-    if (array_key_exists($device_description, $subscription)) {
-      $current_browser_subscribed = FALSE;
-    }
-  }
+  if (!empty($user_subscriptions)) {
+    $current_browser_subscribed = TRUE;
 
-  if (!empty($user_subscriptions) && !$current_browser_subscribed) {
+    foreach ($user_subscriptions as $subscription) {
+      if (array_key_exists($device_description, $subscription)) {
+        $current_browser_subscribed = FALSE;
+        break;
+      }
+    }
+
+    if ($current_browser_subscribed) {
+      return;
+    }
+
     // User has subscription, provide switch to turn it off.
     $form['push_notifications']['current_device']['current_allowed'] = [
       '#type' => 'checkbox',
