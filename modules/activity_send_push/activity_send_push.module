@@ -46,7 +46,11 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
       $file = File::load($fid);
       $path = $file->url();
 
-      $payload = json_encode(['message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)]);
+      $payload = json_encode([
+        'message'=> strip_tags($message_to_send),
+        'icon' => file_url_transform_relative($path),
+        'url' => $activity->getRelatedEntityUrl()->toString(),
+      ]);
 
       // Get subscription object of the selected user.
       $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
