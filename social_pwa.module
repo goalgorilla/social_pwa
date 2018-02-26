@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   Generates and attaches the <meta> and <link> tags needed for the PWA inside the <head>
+ * Generates and attaches the <meta> and <link> tags needed for the PWA.
  */
 
 use Drupal\Core\Form\FormStateInterface;
@@ -15,7 +15,7 @@ use Drupal\social_pwa\BrowserDetector;
  */
 function social_pwa_page_attachments(array &$page) {
 
-  $account =  \Drupal::currentUser();
+  $account = \Drupal::currentUser();
   // PWA is for logged in users only since
   // we store the subscription ID to the uid.
   if ($account->isAnonymous()) {
@@ -26,12 +26,12 @@ function social_pwa_page_attachments(array &$page) {
   $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
 
   if ($icon === NULL || !isset($icon[0])) {
-    print '<!-- Social PWA Module: Please upload an icon in my settings. Only then I can work properly! -->';
     return;
   }
+
   // Get the file id and path.
   $fid = $icon[0];
-  /** @var File $file */
+  /** @var \Drupal\file\Entity\File $file */
   $file = File::load($fid);
   $path = $file->getFileUri();
 
@@ -49,13 +49,17 @@ function social_pwa_page_attachments(array &$page) {
     'href' => file_url_transform_relative(ImageStyle::load('social_pwa_icon_180')->buildUrl($path)),
   ];
 
-  // Attach the main.js and sw.js in the render array
+  // Attach the main.js and sw.js in the render array.
   $page['#attached']['library'][] = 'social_pwa/main-js';
   $page['#attached']['library'][] = 'social_pwa/service-worker';
 
-  // Attach the generated data from /manifest.json
+  // Add the public VAPID key.
+  $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
+  $page['#attached']['drupalSettings']['vapidPublicKey'] = $vapid_keys['public'];
+
+  // Attach the generated data from /manifest.json.
   $page['#attached']['html_head_link'][][] = [
-    // Get the contents of the Manifest
+    // Get the contents of the Manifest.
     'rel' => 'manifest',
     'href' => '/manifest.json',
   ];
@@ -90,7 +94,7 @@ function social_pwa_page_attachments(array &$page) {
       '#tag' => 'meta',
       '#attributes' => [
         'name' => 'apple-mobile-web-app-status-bar-style',
-          'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
+        'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
       ],
     ],
     'apple-mobile-web-app-title' => [
@@ -115,7 +119,7 @@ function social_pwa_page_attachments(array &$page) {
         'content' => \Drupal::config('social_pwa.settings')->get('theme_color'),
       ],
     ],
-    // Color the status bar on mobile devices
+    // Color the status bar on mobile devices.
     'theme-color' => [
       '#tag' => 'meta',
       '#attributes' => [
@@ -219,7 +223,7 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       '#tag' => 'div',
       '#attributes' => [
         'class' => ['help-block', 'blocked-notice'],
-      ]
+      ],
     ];
   }
 
