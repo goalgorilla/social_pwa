@@ -27,9 +27,9 @@ function social_pwa_page_attachments(array &$page) {
   $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
 
   if ($icon === NULL || !isset($icon[0])) {
-    print '<!-- Social PWA Module: Please upload an icon in my settings. Only then I can work properly! -->';
     return;
   }
+
   // Get the file id and path.
   $fid = $icon[0];
   /** @var File $file */
@@ -53,6 +53,10 @@ function social_pwa_page_attachments(array &$page) {
   // Attach the main.js and sw.js in the render array
   $page['#attached']['library'][] = 'social_pwa/main-js';
   $page['#attached']['library'][] = 'social_pwa/service-worker';
+
+  // Add the public VAPID key.
+  $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
+  $page['#attached']['drupalSettings']['vapidPublicKey'] = $vapid_keys['public'];
 
   // Attach the generated data from /manifest.json
   $page['#attached']['html_head_link'][][] = [
