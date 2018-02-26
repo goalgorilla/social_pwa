@@ -9,6 +9,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
 use Drupal\social_pwa\BrowserDetector;
+use Minishlink\WebPush\VAPID;
 
 /**
  * Implements hook_page_attachments().

@@ -5,6 +5,7 @@ namespace Drupal\social_pwa\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
+use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Minishlink\WebPush\WebPush;
 
@@ -123,14 +124,18 @@ class PushNotificationForm extends FormBase {
         }
       }
 
+      // Get the VAPID keys that were generated before.
+      $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
+
       $auth = array(
         'VAPID' => array(
-          'subject' => 'mailto:frankgraave@gmail.com', // Can be a "mailto:" or a website address
-          'publicKey' => 'BFhe5EFfcPn0XDnBAgNGPIqKocwI-yimiWet1fQXNbFtCwlRzmGVDTJoG8fjxjXEXmFqt8BzcaDtkFyTdUk2cb8', // (recommended) uncompressed public key P-256 encoded in Base64-URL
-          'privateKey' => '4iyfc5VbYDifpZ9170MY-xDXVjEmg3tOKRriFFl4Wxo', // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
+          'subject' => Url::fromRoute('<front>', [], ['absolute' => TRUE]),
+          'publicKey' => $vapid_keys['public'],
+          'privateKey' => $vapid_keys['private'],
         ),
       );
 
+      /** @var \Minishlink\WebPush\WebPush $webPush */
       $webPush = new WebPush($auth);
 
       foreach ($notifications as $notification) {

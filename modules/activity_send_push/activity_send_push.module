@@ -6,6 +6,7 @@
  */
 
 use Drupal\activity_creator\ActivityInterface;
+use Drupal\Core\Url;
 use Drupal\message\Entity\Message;
 use Minishlink\WebPush\WebPush;
 use Drupal\file\Entity\File;
@@ -63,14 +64,14 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         }
       }
 
+      // Get the VAPID keys that were generated before.
+      $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
+
       $auth = [
         'VAPID' => [
-          // Can be a "mailto:" or a website address.
-          'subject' => 'mailto:frankgraave@gmail.com',
-          // Uncompressed public key P-256 encoded in Base64-URL.
-          'publicKey' => 'BFhe5EFfcPn0XDnBAgNGPIqKocwI-yimiWet1fQXNbFtCwlRzmGVDTJoG8fjxjXEXmFqt8BzcaDtkFyTdUk2cb8',
-          // The secret multiplier of the private key encoded in Base64-URL.
-          'privateKey' => '4iyfc5VbYDifpZ9170MY-xDXVjEmg3tOKRriFFl4Wxo',
+          'subject' => Url::fromRoute('<front>', [], ['absolute' => TRUE]),
+          'publicKey' => $vapid_keys['public'],
+          'privateKey' => $vapid_keys['private'],
         ],
       ];
 
