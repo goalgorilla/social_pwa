@@ -2,7 +2,7 @@
 
 /**
  * @file
- *   The activity_send_push.module file.
+ * The activity_send_push module file.
  */
 
 use Drupal\activity_creator\ActivityInterface;
@@ -43,11 +43,12 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
       $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
       // Get the file id and path.
       $fid = $icon[0];
-      /** @var File $file */
+
+      /** @var \Drupal\file\Entity\File $file */
       $file = File::load($fid);
       $path = $file->url();
 
-      $payload = json_encode(['message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)]);
+      $payload = json_encode(['message' => strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)]);
 
       // Get subscription object of the selected user.
       $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');

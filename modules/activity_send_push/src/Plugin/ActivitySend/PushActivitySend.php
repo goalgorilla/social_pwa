@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\activity_send_push\Plugin\ActivitySend\PushActivitySend.
- */
-
 namespace Drupal\activity_send_push\Plugin\ActivitySend;
 
 use Drupal\activity_send\Plugin\ActivitySendBase;

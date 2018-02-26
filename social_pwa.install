@@ -23,7 +23,7 @@ function social_pwa_install() {
 
     \Drupal::state()->set('social_pwa.vapid_keys', [
       'public' => $generated_keys['publicKey'],
-      'private' => $generated_keys['privateKey']
+      'private' => $generated_keys['privateKey'],
     ]);
   }
 }
@@ -32,22 +32,22 @@ function social_pwa_install() {
  * Implements hook_requirements().
  */
 function social_pwa_requirements($phase) {
-  $requirements = array();
+  $requirements = [];
 
   // GMP library.
   if ($phase === 'runtime' || $phase === 'install') {
     // Check for the PHP GMP library.
     if (function_exists('gmp_init')) {
-      $requirements['social_pwa_gmp'] = array(
+      $requirements['social_pwa_gmp'] = [
         'value' => t('PHP GMP library is installed.'),
-      );
+      ];
     }
     else {
-      $requirements['social_pwa_gmp'] = array(
+      $requirements['social_pwa_gmp'] = [
         'value' => t('Not installed'),
         'severity' => REQUIREMENT_ERROR,
         'description' => t('The GMP library for PHP is missing or outdated. Check the <a href="http://php.net/manual/book.gmp.php">PHP GMP documentation</a> for information on how to correct this.'),
-      );
+      ];
     }
     $requirements['social_pwa_gmp']['title'] = t('GMP library');
   }
@@ -58,16 +58,16 @@ function social_pwa_requirements($phase) {
 
     // VAPID keys are present.
     if (isset($vapid_keys['public'], $vapid_keys['private'])) {
-      $requirements['social_pwa_vapid'] = array(
+      $requirements['social_pwa_vapid'] = [
         'value' => t('VAPID keys are generated.'),
-      );
+      ];
     }
     else {
-      $requirements['social_pwa_vapid'] = array(
+      $requirements['social_pwa_vapid'] = [
         'value' => t('No VAPID keys found.'),
         'severity' => REQUIREMENT_WARNING,
         'description' => t('Without VAPID keys no push notifications can be send. Turning the Social PWA module off and on again should generate new keys.'),
-      );
+      ];
     }
     $requirements['social_pwa_vapid']['title'] = t('Push notifications VAPID keys');
   }
