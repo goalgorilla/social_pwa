@@ -12,8 +12,7 @@
   Drupal.behaviors.serviceWorkerLoad = {
     attach: function (context, settings) {
 
-      const vapidPublicKey = 'BFhe5EFfcPn0XDnBAgNGPIqKocwI-yimiWet1fQXNbFtCwlRzmGVDTJoG8fjxjXEXmFqt8BzcaDtkFyTdUk2cb8';
-      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+      const applicationServerKey = urlBase64ToUint8Array(settings.vapidPublicKey);
 
       var isSubscribed = false;
       var swRegistration = null;
