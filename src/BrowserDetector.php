@@ -21,7 +21,7 @@ class BrowserDetector {
   /**
    * Instance of the DeviceDetector.
    *
-   * @var /DeviceDetector/DeviceDetector
+   * @var \DeviceDetector\DeviceDetector
    */
   protected $dd;
 
@@ -60,6 +60,16 @@ class BrowserDetector {
 
     // We can parse the information.
     $this->dd->parse();
+  }
+
+  /**
+   * Returns name of operating system.
+   *
+   * @return string
+   *   The operating system.
+   */
+  public function getOsName() {
+    return $this->dd->getOs('name');
   }
 
   /**

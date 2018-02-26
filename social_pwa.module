@@ -214,12 +214,51 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
         'data-switch' => TRUE,
       ],
     ];
+
+    switch ($bd->getBrowserName()) {
+      case 'Chrome':
+        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3D';
+
+        $operating_systems = ['Android', 'iOS'];
+        $operating_system = $bd->getOsName();
+
+        if (in_array($operating_system, $operating_systems)) {
+          $url .= $operating_system;
+        }
+        else {
+          $url .= 'Desktop';
+        }
+
+        $url .= '&oco=1';
+        break;
+
+      case 'Chrome Mobile':
+        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DAndroid&oco=1';
+        break;
+
+      case 'Chrome Mobile iOS':
+        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DiOS&oco=1';
+        break;
+    }
+
+    $text = 'You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.';
+
+    if (isset($url)) {
+      $text = t(str_replace('reset your browser setting', '<a href="@url" target="_blank">reset your browser setting</a>', $text), [
+        '@url' => $url,
+      ]);
+    }
+    else {
+      $text = t($text);
+    }
+
     $form['push_notifications']['current_device']['blocked_notice'] = [
       '#type' => 'html_tag',
       '#tag' => 'div',
       '#attributes' => [
-        'class' => ['help-block', 'blocked-notice'],
-      ]
+        'class' => ['help-block', 'blocked-notice', 'hide'],
+      ],
+      '#value' => $text,
     ];
   }
 
