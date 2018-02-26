@@ -243,6 +243,23 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
       case 'Chrome Mobile iOS':
         $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DiOS&oco=1';
         break;
+
+      case 'Firefox':
+      case 'Firefox Focus':
+      case 'Firefox Mobile':
+        $url = 'https://support.mozilla.org/en-US/kb/push-notifications-firefox';
+        break;
+
+      case 'Microsoft Edge':
+        $url = 'https://blogs.windows.com/msedgedev/2016/05/16/web-notifications-microsoft-edge';
+        break;
+
+      case 'Opera':
+      case 'Opera Mini':
+      case 'Opera Mobile':
+      case 'Opera Next':
+        $url = 'http://help.opera.com/opera/Windows/1656/en/controlPages.html#manageNotifications';
+        break;
     }
 
     $text = 'You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.';
