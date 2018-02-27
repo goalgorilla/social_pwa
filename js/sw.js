@@ -11,13 +11,14 @@ self.addEventListener('push', function (event) {
     return;
   }
 
-  var sendNotification = function(payload, icon) {
+  var sendNotification = function(payload, icon, url) {
     var title = "Open Social";
     icon = icon || '/sites/default/files/images/touch/open-social.png';
     payload = payload || 'You\'ve received a message!';
     return self.registration.showNotification(title, {
       body: payload,
-      icon: icon
+      icon: icon,
+      data: url
     });
   };
 
@@ -38,11 +39,11 @@ self.addEventListener('push', function (event) {
         }
         // The page is still open but unfocused, so focus the tab.
         else if (clientList.length > 0) {
-          sendNotification(data.message, data.icon);
+          sendNotification(data.message, data.icon, data.url);
         }
         // The page is closed, send a push to retain engagement.
         else {
-          sendNotification(data.message, data.icon);
+          sendNotification(data.message, data.icon, data.url);
         }
       })
     );
@@ -56,12 +57,15 @@ self.addEventListener('notificationclick', function(event) {
   event.waitUntil(
     // Retrieve a list of the clients of this service worker.
     self.clients.matchAll().then(function(clientList) {
+      var url = event.notification.data ? event.notification.data : '/';
       // If there is at least one client, focus it.
       if (clientList.length > 0) {
-        return clientList[0].focus();
+        return clientList[0].focus().then(function (client) {
+          client.navigate(url);
+        });
       }
       // Otherwise, open a new page.
-      return self.clients.openWindow('/');
+      return self.clients.openWindow(url);
     })
   );
 });

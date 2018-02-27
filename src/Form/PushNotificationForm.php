@@ -109,7 +109,7 @@ class PushNotificationForm extends FormBase {
 
       // Prepare the payload with the message.
       $message = $form_state->getValue('message');
-      $payload = json_encode(array('message'=>$message));
+      $payload = json_encode(['message' => $message]);
 
       // Array of notifications.
       $notifications = [];
@@ -127,13 +127,13 @@ class PushNotificationForm extends FormBase {
       // Get the VAPID keys that were generated before.
       $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
 
-      $auth = array(
-        'VAPID' => array(
+      $auth = [
+        'VAPID' => [
           'subject' => Url::fromRoute('<front>', [], ['absolute' => TRUE]),
           'publicKey' => $vapid_keys['public'],
           'privateKey' => $vapid_keys['private'],
-        ),
-      );
+        ],
+      ];
 
       /** @var \Minishlink\WebPush\WebPush $webPush */
       $webPush = new WebPush($auth);
