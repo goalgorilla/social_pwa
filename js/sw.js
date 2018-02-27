@@ -57,12 +57,14 @@ self.addEventListener('notificationclick', function(event) {
   event.waitUntil(
     // Retrieve a list of the clients of this service worker.
     self.clients.matchAll().then(function(clientList) {
+      var url = event.notification.data ? event.notification.data : '/';
       // If there is at least one client, focus it.
       if (clientList.length > 0) {
-        return clientList[0].focus();
+        return clientList[0].focus().then(function (client) {
+          client.navigate(url);
+        });
       }
       // Otherwise, open a new page.
-      var url = event.notification.data ? event.notification.data : '/';
       return self.clients.openWindow(url);
     })
   );
