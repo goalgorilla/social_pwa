@@ -47,7 +47,7 @@
       } else {
         console.warn('[PWA] - Push messaging is not supported');
         $('#edit-push-notifications-current-device-current').attr('disabled', true);
-        $('.blocked-notice').html(Drupal.t('Push messaging is not supported.'));
+        $('.blocked-notice').html(Drupal.t('Your browser does not support push notifications.'));
         $('.social_pwa--overlay').remove();
       }
 
