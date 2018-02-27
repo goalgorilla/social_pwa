@@ -39,17 +39,30 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         $message_to_send = $message[0];
       }
 
-      $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
-      // Get the file id and path.
-      $fid = $icon[0];
-      /** @var File $file */
-      $file = File::load($fid);
-      $path = $file->url();
+      $fields = [
+        'message' => strip_tags($message_to_send),
+      ];
 
-      $payload = json_encode(['message'=> strip_tags($message_to_send), 'icon' => file_url_transform_relative($path)]);
+      $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+
+      if (!empty($icon)) {
+        // Get the file id and path.
+        $fid = $icon[0];
+        /** @var \Drupal\file\Entity\File $file */
+        $file = File::load($fid);
+        $path = $file->url();
+
+        $fields['icon'] = file_url_transform_relative($path);
+      }
+
+      $payload = json_encode($fields);
 
       // Get subscription object of the selected user.
       $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+
+      if (empty($user_subscription)) {
+        return;
+      }
 
       $notifications = [];
       foreach ($user_subscription as $subscription) {
