@@ -36,7 +36,7 @@ function _activity_send_push_prepare_destinations($set = FALSE) {
   foreach ($message_templates as $message_template) {
     $config_name = 'message.template.' . $message_template;
 
-    /* @var \Drupal\Core\Config\ImmutableConfig $config */
+    /* @var \Drupal\Core\Config\Config $config */
     $config = \Drupal::configFactory()->getEditable($config_name);
 
     $activity_destinations = $config->get($key);
