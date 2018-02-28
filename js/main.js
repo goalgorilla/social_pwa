@@ -16,6 +16,7 @@
 
       var isSubscribed = false;
       var swRegistration = null;
+      var canClick = true;
 
       function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -87,21 +88,26 @@
                   }
                 });
             }
-            // subscribeUser();
           });
       }
-
-      $('#edit-push-notifications-current-device-current').on('click', function() {
-        subscribeUser();
-      });
 
       /**
        * Ask the user to receive push notifications through the browser prompt.
        */
-      function subscribeUser() {
+      $('#edit-push-notifications-current-device-current').on('click', function (event) {
+        if (!canClick) {
+          canClick = true;
+          return;
+        }
+
+        event.preventDefault();
+
+        var self = $(this);
+
         // Creating an overlay to provide focus to the permission prompt.
         $('body').append('<div class="social_pwa--overlay" style="width: 100%; height: 100%; position: fixed; background-color: rgba(0,0,0,0.5); left: 0; top: 0; z-index: 999;"></div>');
-        navigator.serviceWorker.ready.then(function(swRegistration) {
+
+        navigator.serviceWorker.ready.then(function (swRegistration) {
           swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
@@ -111,6 +117,8 @@
               $('.social_pwa--overlay').remove();
               updateSubscriptionOnServer(subscription);
               isSubscribed = true;
+              canClick = false;
+              self.click();
             })
             .catch(function (err) {
               // Delete the overlay since the user has denied.
@@ -119,7 +127,7 @@
               blockSwitcher();
             });
         })
-      }
+      });
 
       /**
        * Update the subscription to te database through a callback.
