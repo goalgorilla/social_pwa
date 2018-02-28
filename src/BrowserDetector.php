@@ -12,7 +12,7 @@ use DeviceDetector\DeviceDetector;
 class BrowserDetector {
 
   /**
-   * Holds the User Agent that should be parsed
+   * Holds the User Agent that should be parsed.
    *
    * @var string
    */
@@ -31,8 +31,7 @@ class BrowserDetector {
    * @param string $userAgent
    *   User Agent to parse.
    */
-  public function __construct($userAgent = '')
-  {
+  public function __construct($userAgent = '') {
     // Initiate the DeviceDetector library.
     $this->dd = new DeviceDetector();
     $this->dd->discardBotInformation();
@@ -75,10 +74,7 @@ class BrowserDetector {
   /**
    * Returns the type of device.
    *
-   * Possible options:
-   * - mobile
-   * - table
-   * - desktop
+   * Possible options: mobile, tablet, desktop.
    *
    * @return string
    *   The device type.
