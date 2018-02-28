@@ -88,7 +88,7 @@ class ManifestSettingsForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // Get the default settings for the Social PWA Module
+    // Get the default settings for the Social PWA Module.
     $config = $this->config('social_pwa.settings');
     // Get the specific icons. Needed to get the correct path of the file.
     $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');

@@ -18,7 +18,7 @@ class UserSubscriptionController extends ControllerBase {
    * Save or update the subscription data for the user.
    *
    * @return \Symfony\Component\HttpFoundation\Response
-   *    Return response.
+   *   Return response.
    */
   public function saveSubscription() {
     // The user id.
@@ -53,7 +53,7 @@ class UserSubscriptionController extends ControllerBase {
    * Remove the subscription from the database.
    *
    * @return \Drupal\Core\Ajax\AjaxResponse
-   *    Returns an ajax response with redirect.
+   *   Returns an ajax response with redirect.
    */
   public function removeSubscription() {
     // The user id.
