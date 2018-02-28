@@ -27,6 +27,13 @@ social_pwa.save-subscription:
   requirements:
     _permission: 'access content'
 
+social_pwa.remove-subscription:
+  path: '/subscription/remove'
+  defaults:
+    _controller: '\Drupal\social_pwa\Controller\UserSubscriptionController::removeSubscription'
+  requirements:
+    _permission: 'access content'
+
 social_pwa.send-push-notification:
   path: '/admin/config/system/pwa/notification'
   defaults:
