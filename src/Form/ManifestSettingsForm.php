@@ -98,8 +98,11 @@ class ManifestSettingsForm extends ConfigFormBase {
     // Start form.
     $form['social_pwa_manifest_settings'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Configuration for Manifest.json and meta tags'),
+      '#title' => $this->t('Push notification configuration'),
       '#open' => FALSE,
+    ];
+    $form['social_pwa_manifest_settings']['description'] = [
+      '#markup' => $this->t('In order for push notifications and your Progressive Web App to work you will need to configure the settings below.'),
     ];
     $form['social_pwa_manifest_settings']['short_name'] = [
       '#type' => 'textfield',
@@ -107,19 +110,19 @@ class ManifestSettingsForm extends ConfigFormBase {
       '#size' => 12,
       '#default_value' => $config->get('short_name'),
       '#required' => TRUE,
-      '#description' => $this->t('This will be the name the "app" receives when it is added to the home screen. So you might want to keep this short.'),
+      '#description' => $this->t('This is the name the user will see when they add your website to their homescreen. You might want to keep this short.'),
     ];
     $form['social_pwa_manifest_settings']['name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Name'),
       '#size' => 30,
       '#default_value' => $config->get('name'),
-      '#description' => $this->t('Put in the name of your site.'),
+      '#description' => $this->t('Enter the name of your website.'),
     ];
     $form['social_pwa_manifest_settings']['icon'] = [
       '#type' => 'managed_file',
       '#title' => $this->t('General App Icon'),
-      '#description' => $this->t('Provide an square (.png) image that serves as your icon when the user adds the website to their home screen. <i>(Minimum dimensions 512 x 512)</i>'),
+      '#description' => $this->t('Provide a square (.png) image. This image serves as your icon when the user adds the website to their home screen. <i>Minimum dimensions are 512px by 512px.</i>'),
       '#default_value' => [$fid],
       '#required' => TRUE,
       '#upload_location' => file_default_scheme() . '://images/touch/',
@@ -132,13 +135,13 @@ class ManifestSettingsForm extends ConfigFormBase {
       '#type' => 'color',
       '#title' => $this->t('Background Color'),
       '#default_value' => $config->get('background_color'),
-      '#description' => $this->t('Select a background color for the launch screen.'),
+      '#description' => $this->t('Select a background color for the launch screen. This is shown when the user opens the website from their homescreen.'),
     ];
     $form['social_pwa_manifest_settings']['theme_color'] = [
       '#type' => 'color',
       '#title' => $this->t('Theme Color'),
       '#default_value' => $config->get('theme_color'),
-      '#description' => $this->t('Select a theme color.'),
+      '#description' => $this->t('This color is used to create a consistent experience in the browser when the users launch your website from their homescreen.'),
     ];
 
     // Sub-section for Advanced Settings.
@@ -149,16 +152,16 @@ class ManifestSettingsForm extends ConfigFormBase {
     ];
     $form['social_pwa_manifest_advanced_settings']['notice'] = [
       '#type' => 'fieldset',
-      '#title' => $this->t('Please Notice:'),
+      '#title' => $this->t('Please notice:'),
       '#open' => FALSE,
-      '#description' => $this->t('These settings have ben set automatically to serve the most common use cases. Only change these settings if you know what you are doing.'),
+      '#description' => $this->t('These settings have been set automatically to serve the most common use cases. Only change these settings if you know what you are doing.'),
     ];
     $form['social_pwa_manifest_advanced_settings']['start_url'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Start URL'),
       '#size' => 15,
       '#disabled' => FALSE,
-      '#description' => $this->t('The scope for the Service Worker'),
+      '#description' => $this->t('The scope for the Service Worker.'),
       '#default_value' => $config->get('start_url'),
       '#field_prefix' => $this->requestContext->getCompleteBaseUrl(),
     ];
@@ -227,10 +230,6 @@ class ManifestSettingsForm extends ConfigFormBase {
       ->save();
 
     parent::submitForm($form, $form_state);
-
-    // Set up a message.
-    $sendPushLink = Link::createFromRoute('send a Push Notification!', 'social_pwa.send-push-notification')->toString();
-    drupal_set_message(t('You can now @link', ['@link' => $sendPushLink]), 'status');
   }
 
 }
