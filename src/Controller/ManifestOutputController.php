@@ -18,6 +18,11 @@ class ManifestOutputController extends ControllerBase {
    * This will convert the social_pwa.settings.yml array to json format.
    */
   public function generateManifest() {
+    $pwa_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
+    if (!$pwa_enabled) {
+      return new JsonResponse([]);
+    }
+
     // Get all the current settings stored in social_pwa.settings.
     $config = \Drupal::config('social_pwa.settings')->get();
     // Get the specific icons. Needed to get the correct path of the file.
