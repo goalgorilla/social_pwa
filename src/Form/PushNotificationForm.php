@@ -48,7 +48,7 @@ class PushNotificationForm extends FormBase {
 
     // Check if the $user_list does have values.
     if (empty($user_list)) {
-      drupal_set_message(t('There are currently no users subscribed to receive push notifications.', 'warning'));
+      drupal_set_message(t('There are currently no users subscribed to receive push notifications.'), 'warning');
     }
     else {
       // Start the form for sending push notifications.
