@@ -46,13 +46,9 @@ class PushNotificationForm extends FormBase {
       }
     }
 
-    // Get a link to the Social PWA Settings that shows up in the message below.
-    $pwaSettingsLink = Link::createFromRoute('Social PWA Settings', 'social_pwa.settings')->toString();
     // Check if the $user_list does have values.
     if (empty($user_list)) {
-      drupal_set_message(t('There are currently no users subscribed to receive push notifications! Also make sure you have the @link configured and saved.',
-        ['@link' => $pwaSettingsLink]),
-        'warning');
+      drupal_set_message(t('There are currently no users subscribed to receive push notifications.', 'warning'));
     }
     else {
       // Start the form for sending push notifications.
