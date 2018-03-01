@@ -9,6 +9,9 @@ use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Minishlink\WebPush\WebPush;
 
+/**
+ * Configure Push Notifications form.
+ */
 class PushNotificationForm extends FormBase {
 
   /**
@@ -23,14 +26,16 @@ class PushNotificationForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
-    // First we check if there are users on the platform that have a subscription
-    // Retrieve all uid
+    // First we check if there are users on the platform that have a
+    // subscription.
+    // Retrieve all uid.
     $user_query = \Drupal::entityQuery('user');
-    $user_query->condition('uid',0,'>');
+    $user_query->condition('uid', 0, '>');
     $user_list = $user_query->execute();
-    // Filter to check which users have subscription
+
+    // Filter to check which users have subscription.
     foreach ($user_list as $key => &$value) {
-      /** @var User $account */
+      /** @var \Drupal\user\Entity\User $account */
       if ($account = User::load($key)) {
         $user_subscription = \Drupal::service('user.data')->get('social_pwa', $account->id(), 'subscription');
         if (isset($user_subscription)) {
@@ -43,56 +48,50 @@ class PushNotificationForm extends FormBase {
 
     // Get a link to the Social PWA Settings that shows up in the message below.
     $pwaSettingsLink = Link::createFromRoute('Social PWA Settings', 'social_pwa.settings')->toString();
-    // Check if the $user_list does have values
+    // Check if the $user_list does have values.
     if (empty($user_list)) {
-      drupal_set_message(t('There are currently no users subscribed to receive push notifications! Also make sure you have the @link configured and saved.', array('@link' => $pwaSettingsLink)), 'warning');
-    } else {
-      // Start the form for sending push notifications
-      $form['push_notification'] = array(
+      drupal_set_message(t('There are currently no users subscribed to receive push notifications! Also make sure you have the @link configured and saved.',
+        ['@link' => $pwaSettingsLink]),
+        'warning');
+    }
+    else {
+      // Start the form for sending push notifications.
+      $form['push_notification'] = [
         '#type' => 'fieldset',
         '#title' => $this->t('Send a Push Notification'),
         '#open' => FALSE,
-      );
-      $form['push_notification']['selected-user'] = array(
+      ];
+      $form['push_notification']['selected-user'] = [
         '#type' => 'select',
         '#title' => $this->t('To user'),
         '#description' => $this->t('This is a list of users that have given permission to receive notifications.'),
-        '#options' => $user_list, // -> then provide filtered list
-      );
-      $form['push_notification']['title'] = array(
+        '#options' => $user_list,
+      ];
+      $form['push_notification']['title'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Title'),
         '#size' => 47,
         '#default_value' => 'Open Social',
         '#disabled' => TRUE,
         '#description' => $this->t('This will be the <b>title</b> of the Push Notification. <i>(Static value for now)</i>'),
-      );
-      $form['push_notification']['message'] = array(
+      ];
+      $form['push_notification']['message'] = [
         '#type' => 'textfield',
         '#title' => $this->t('Message'),
         '#size' => 47,
         '#maxlength' => 120,
         '#default_value' => 'Enter your message here...',
         '#description' => $this->t('This will be the <b>message</b> of the Push Notification.'),
-      );
-
-      // TODO: Maybe create a fieldset where the user fills in an url for redirect when the user clicks the notification.
+      ];
 
       $form['actions']['#type'] = 'actions';
-      $form['actions']['submit'] = array(
+      $form['actions']['submit'] = [
         '#type' => 'submit',
         '#value' => $this->t('Send Push Notification'),
         '#button_type' => 'primary',
-      );
+      ];
     }
     return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateForm(array &$form, FormStateInterface $form_state) {
-    parent::validateForm($form, $form_state);
   }
 
   /**
@@ -152,4 +151,5 @@ class PushNotificationForm extends FormBase {
     }
     drupal_set_message($this->t('Message was successfully sent!'));
   }
+
 }
