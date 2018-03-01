@@ -4,7 +4,7 @@ social_pwa.settings:
     _form: '\Drupal\social_pwa\Form\ManifestSettingsForm'
     _title: 'Social PWA Settings'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'administer pwa settings'
 
 social_pwa.manifest:
   path: '/manifest.json'
@@ -38,6 +38,6 @@ social_pwa.send-push-notification:
   path: '/admin/config/system/pwa/notification'
   defaults:
     _form: '\Drupal\social_pwa\Form\PushNotificationForm'
-    _title: 'Send Push Notification'
+    _title: 'Broadcast Push Notification'
   requirements:
-    _permission: 'administer site configuration'
+    _permission: 'broadcast push notification'
