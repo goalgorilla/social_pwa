@@ -104,6 +104,16 @@ class ManifestSettingsForm extends ConfigFormBase {
     $form['social_pwa_manifest_settings']['description'] = [
       '#markup' => $this->t('In order for push notifications and your Progressive Web App to work you will need to configure the settings below.'),
     ];
+
+    // For now we will turn everything on or off with one checkbox. However we
+    // should make it possible to easily extend this in the future.
+    $form['social_pwa_manifest_settings']['status_all'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable push notifications and PWA'),
+      '#default_value' => null !== $config->get('status.all') ? $config->get('status.all') : TRUE,
+      '#description' => $this->t('Disabling the push notifications and PWA will ensure that no user is able to configure and receive push notifications. Nor will any other Progressive Web App functions be available.'),
+    ];
+
     $form['social_pwa_manifest_settings']['short_name'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Short name'),
@@ -219,7 +229,8 @@ class ManifestSettingsForm extends ConfigFormBase {
     }
 
     $config = $this->config('social_pwa.settings');
-    $config->set('name', $form_state->getValue('name'))
+    $config->set('status.all', $form_state->getValue('status_all'))
+      ->set('name', $form_state->getValue('name'))
       ->set('short_name', $form_state->getValue('short_name'))
       ->set('start_url', $form_state->getValue('start_url'))
       ->set('background_color', $form_state->getValue('background_color'))

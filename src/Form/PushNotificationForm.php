@@ -26,6 +26,14 @@ class PushNotificationForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
 
+    // Check first if sending push notifications is enabled.
+    $push_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
+    if (!$push_enabled) {
+      drupal_set_message(t('Sending push notifications is disabled.'), 'warning');
+
+      return $form;
+    }
+
     // First we check if there are users on the platform that have a
     // subscription.
     // Retrieve all uid.

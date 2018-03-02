@@ -16,8 +16,12 @@ use Drupal\file\Entity\File;
  */
 function activity_send_push_activity_insert(ActivityInterface $activity) {
 
+  $push_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
   $destinations = $activity->getDestinations();
-  if (in_array('push', $destinations)) {
+
+  // Check first if sending push notifications is enabled and this is something
+  // we need to do something with anyway.
+  if ($push_enabled && in_array('push', $destinations)) {
     /* @var $activity_send_factory Drupal\activity_send\Plugin\ActivitySendManager */
     $activity_send_factory = \Drupal::service('plugin.manager.activity_send.processor');
     // Trigger the create action for entities.

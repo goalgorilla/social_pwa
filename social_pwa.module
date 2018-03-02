@@ -22,6 +22,12 @@ function social_pwa_page_attachments(array &$page) {
     return;
   }
 
+  // Check first if sending push notifications is enabled.
+  $pwa_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
+  if (!$pwa_enabled) {
+    return;
+  }
+
   // Get the uploaded icon.
   $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
 
@@ -141,6 +147,11 @@ function social_pwa_page_attachments(array &$page) {
  */
 function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
   if ($form_id == 'user_register_form') {
+    return;
+  }
+
+  $push_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
+  if (!$push_enabled) {
     return;
   }
 
