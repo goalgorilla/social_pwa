@@ -155,6 +155,16 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
     return;
   }
 
+  // Target user.
+  $uid = \Drupal::routeMatch()->getParameter('user')->id();
+  // Current user.
+  $current_uid = Drupal::currentUser()->id();
+
+  // Hide the Push notifications fieldset if target and current user is not the same.
+  if ($uid !== $current_uid) {
+    return;
+  }
+
   // Get the device and subscription information about this user.
   $useragent = $_SERVER['HTTP_USER_AGENT'];
   // Browser detector.
@@ -164,8 +174,6 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // The device/browser description.
   $device_description = $bd->getFormattedDescription();
 
-  // Current user.
-  $uid = Drupal::currentUser()->id();
   // Get all the subscriptions for this user.
   $user_subscriptions = \Drupal::service('user.data')
     ->get('social_pwa', $uid, 'subscription');
