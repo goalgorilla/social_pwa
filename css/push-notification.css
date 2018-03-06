@@ -1,7 +1,13 @@
 .ui-dialog_push-notification.ui-dialog {
-  max-width: 400px; }
+  max-width: 320px; }
+  @media (min-width: 900px) {
+    .ui-dialog_push-notification.ui-dialog {
+      max-width: 400px; } }
 .ui-dialog_push-notification .ui-dialog-content {
-  padding: 2rem 2.5rem  2.5rem; }
+  padding: 2rem 1rem; }
+  @media (min-width: 900px) {
+    .ui-dialog_push-notification .ui-dialog-content {
+      padding: 2rem 2.5rem  2.5rem; } }
 .ui-dialog_push-notification .ui-dialog-titlebar {
   display: none; }
 .ui-dialog_push-notification .ui-dialog-message-title {
