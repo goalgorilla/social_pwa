@@ -13,13 +13,14 @@
     attach: function (context, settings) {
       // Create the prompt.
       $('body').append('<div id="social_pwa--prompt">' +
-        '<span class="ui-dialog-title">' +
+        '<h3 class="ui-dialog-message-title">' +
         Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
-        '</span>' +
+        '</h3>' +
         '<p>' + Drupal.t('So important notifications can be sent to you straight away.') + '</p>' +
         '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
-        '<button class="btn btn-default">' + Drupal.t('Not now') + '</button>' +
-        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div>');
+        '<div class="buttons"><button class="btn btn-default">' + Drupal.t('Not' +
+          ' now') + '</button>' +
+        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div></div>');
 
       var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
         dialogClass: 'ui-dialog_push-notification',
