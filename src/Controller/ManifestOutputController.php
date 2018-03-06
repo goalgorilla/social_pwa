@@ -25,36 +25,6 @@ class ManifestOutputController extends ControllerBase {
 
     // Get all the current settings stored in social_pwa.settings.
     $config = \Drupal::config('social_pwa.settings')->get();
-    // Get the specific icons. Needed to get the correct path of the file.
-    $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
-
-    // Get the file id and path.
-    $fid = $icon[0];
-    /** @var \Drupal\file\Entity\File $file */
-    $file = File::load($fid);
-    $path = $file->getFileUri();
-
-    $image_styles = [
-      'social_pwa_icon_128' => '128x128',
-      'social_pwa_icon_144' => '144x144',
-      'social_pwa_icon_152' => '152x152',
-      'social_pwa_icon_180' => '180x180',
-      'social_pwa_icon_192' => '192x192',
-      'social_pwa_icon_256' => '256x256',
-      'social_pwa_icon_512' => '512x512',
-    ];
-
-    $image_style_url = [];
-    foreach ($image_styles as $key => $value) {
-      $image_style_url[] = [
-        'src' => file_url_transform_relative(ImageStyle::load($key)->buildUrl($path)),
-        'sizes' => $value,
-        'type' => 'image/png',
-      ];
-    }
-
-    // Insert the icons to the array.
-    $this->arrayInsert($config, 3, ['icons' => $image_style_url]);
 
     // Array filter used to filter the "_core:" key from the output.
     $allowed = [
@@ -67,32 +37,51 @@ class ManifestOutputController extends ControllerBase {
       'display',
       'orientation',
     ];
-    $filtered = array_filter(
-      $config,
-      function ($key) use ($allowed) {
-        return in_array($key, $allowed);
-      },
-      ARRAY_FILTER_USE_KEY
-    );
+
+    $filtered = [];
+
+    foreach ($config as $config_key => $config_value) {
+      if (!in_array($config_key, $allowed)) {
+        continue;
+      }
+
+      if ($config_key == 'icons') {
+        // Get the specific icons. Needed to get the correct path of the file.
+        $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+
+        // Get the file id and path.
+        $fid = $icon[0];
+        /** @var \Drupal\file\Entity\File $file */
+        $file = File::load($fid);
+        $path = $file->getFileUri();
+
+        $image_styles = [
+          'social_pwa_icon_128' => '128x128',
+          'social_pwa_icon_144' => '144x144',
+          'social_pwa_icon_152' => '152x152',
+          'social_pwa_icon_180' => '180x180',
+          'social_pwa_icon_192' => '192x192',
+          'social_pwa_icon_256' => '256x256',
+          'social_pwa_icon_512' => '512x512',
+        ];
+
+        $config_value = [];
+
+        foreach ($image_styles as $key => $value) {
+          $config_value[] = [
+            'src' => file_url_transform_relative(ImageStyle::load($key)->buildUrl($path)),
+            'sizes' => $value,
+            'type' => 'image/png',
+          ];
+        }
+      }
+
+      $filtered[$config_key] = $config_value;
+    }
 
     // Finally, after all the magic went down we return a manipulated and
     // filtered array of our social_pwa.settings and output it to JSON format.
     return new JsonResponse($filtered);
-  }
-
-  /**
-   * Allows inserting an array at a specified position.
-   *
-   * @param array $array
-   *   The main array.
-   * @param int $position
-   *   The position to insert the array at.
-   * @param array $insert_array
-   *   The array to insert.
-   */
-  protected function arrayInsert(array &$array, $position, array $insert_array) {
-    $first_array = array_splice($array, 0, $position);
-    $array = array_merge($first_array, $insert_array, $array);
   }
 
 }
