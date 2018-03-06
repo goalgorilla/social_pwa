@@ -144,6 +144,7 @@ function social_pwa_page_attachments(array &$page) {
   // Check if we need to show a prompt for the user to accept push notifications.
   // @todo: Write some logic here. For now just show it always.
   $page['#attached']['library'][] = 'core/drupal.dialog.ajax';
+  $page['#attached']['library'][] = 'social_pwa/push-notification';
   $page['#attached']['drupalSettings']['pushNotificationPrompt'] = TRUE;
 }
 
