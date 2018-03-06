@@ -65,7 +65,6 @@
               console.log('[PWA] - User has already accepted push.');
               // return;
             } else {
-              // TODO: Custom install prompt story.
               console.log('[PWA] - User has not accepted push yet...');
 
               swRegistration.pushManager.permissionState({
@@ -73,7 +72,26 @@
                 applicationServerKey: applicationServerKey
               })
                 .then(function (state) {
-                  if (state == 'denied') {
+                  // Check if we should prompt the user for enabling the push notifications.
+                  if (state !== 'denied' && settings.pushNotificationPrompt === true) {
+                    // Create the prompt.
+                    $('body').append('<div id="social_pwa--prompt">' +
+                      '<span class="ui-dialog-title">' +
+                        Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
+                      '</span>' +
+                      '<p>' + Drupal.t('So important notifications can be sent to you straight away.') + '</p>' +
+                      '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
+                      '<button class="btn btn-default">' + Drupal.t('Not now') + '</button>' +
+                      '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div>');
+
+                    var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
+                      dialogClass: 'ui-dialog_push-notification',
+                      width: 'auto'
+                    });
+                    pushNotificationsDialog.show();
+                  }
+                  else if (state === 'denied') {
+                    // User denied push notifications. Disable the settings form.
                     var $allowed = $('#edit-push-notifications-current-device-current-allowed');
                     if ($allowed.length) {
                       $allowed.attr({
