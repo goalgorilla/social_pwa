@@ -20,14 +20,13 @@
         '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
         '<div class="buttons"><button class="btn btn-default">' + Drupal.t('Not' +
           ' now') + '</button>' +
-        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div></div>' +
-        '<div class="social_pwa--overlay ui-widget-overlay ui-front"></div>');
+        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div></div>');
 
       var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
         dialogClass: 'ui-dialog_push-notification',
         width: 'auto'
       });
-      pushNotificationsDialog.show();
+      pushNotificationsDialog.showModal();
 
 
       const applicationServerKey = urlBase64ToUint8Array(settings.vapidPublicKey);
