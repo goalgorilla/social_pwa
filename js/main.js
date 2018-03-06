@@ -11,6 +11,22 @@
 
   Drupal.behaviors.serviceWorkerLoad = {
     attach: function (context, settings) {
+      // Create the prompt.
+      $('body').append('<div id="social_pwa--prompt">' +
+        '<span class="ui-dialog-title">' +
+        Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
+        '</span>' +
+        '<p>' + Drupal.t('So important notifications can be sent to you straight away.') + '</p>' +
+        '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
+        '<button class="btn btn-default">' + Drupal.t('Not now') + '</button>' +
+        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div>');
+
+      var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
+        dialogClass: 'ui-dialog_push-notification',
+        width: 'auto'
+      });
+      pushNotificationsDialog.show();
+
 
       const applicationServerKey = urlBase64ToUint8Array(settings.vapidPublicKey);
 
