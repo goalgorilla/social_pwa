@@ -142,8 +142,6 @@
        * User accepted push notifications.
        */
       $(document.body).on('click', '#prompt-accept', function (event) {
-        console.log('ello');
-
         event.preventDefault();
 
         navigator.serviceWorker.ready.then(function (swRegistration) {
