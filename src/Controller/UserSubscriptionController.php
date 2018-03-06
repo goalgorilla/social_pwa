@@ -80,4 +80,20 @@ class UserSubscriptionController extends ControllerBase {
     return new AjaxResponse(NULL, 200);
   }
 
+  /**
+   * Remove the subscription from the database.
+   *
+   * @return \Drupal\Core\Ajax\AjaxResponse
+   *   Returns an ajax response with redirect.
+   */
+  public function savePrompt() {
+    // The user id.
+    $uid = \Drupal::currentUser()->id();
+
+    // Set the prompt time.
+    \Drupal::service('user.data')->set('social_pwa', $uid, 'prompt', time());
+
+    return new AjaxResponse(NULL, 200);
+  }
+
 }

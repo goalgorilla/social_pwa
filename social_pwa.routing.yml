@@ -21,16 +21,23 @@ social_pwa.service-worker:
     _permission: 'access content'
 
 social_pwa.save-subscription:
-  path: '/subscription'
+  path: '/sw-subscription'
   defaults:
     _controller: '\Drupal\social_pwa\Controller\UserSubscriptionController::saveSubscription'
   requirements:
     _permission: 'access content'
 
 social_pwa.remove-subscription:
-  path: '/subscription/remove'
+  path: '/sw-subscription/remove'
   defaults:
     _controller: '\Drupal\social_pwa\Controller\UserSubscriptionController::removeSubscription'
+  requirements:
+    _permission: 'access content'
+
+social_pwa.save-prompt:
+  path: '/sw-subscription/prompt'
+  defaults:
+    _controller: '\Drupal\social_pwa\Controller\UserSubscriptionController::savePrompt'
   requirements:
     _permission: 'access content'
 

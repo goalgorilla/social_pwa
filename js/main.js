@@ -11,23 +11,6 @@
 
   Drupal.behaviors.serviceWorkerLoad = {
     attach: function (context, settings) {
-      // Create the prompt.
-      $('body').append('<div id="social_pwa--prompt">' +
-        '<h3 class="ui-dialog-message-title">' +
-        Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
-        '</h3>' +
-        '<p>' + Drupal.t('So important notifications can be sent to you straight away.') + '</p>' +
-        '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
-        '<div class="buttons"><button class="btn btn-default">' + Drupal.t('Not' +
-          ' now') + '</button>' +
-        '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div></div>');
-
-      var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
-        dialogClass: 'ui-dialog_push-notification',
-        width: 'auto'
-      });
-      pushNotificationsDialog.showModal();
-
 
       const applicationServerKey = urlBase64ToUint8Array(settings.vapidPublicKey);
 
@@ -93,19 +76,21 @@
                   if (state !== 'denied' && settings.pushNotificationPrompt === true) {
                     // Create the prompt.
                     $('body').append('<div id="social_pwa--prompt">' +
-                      '<span class="ui-dialog-title">' +
-                        Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
-                      '</span>' +
+                      '<h3 class="ui-dialog-message-title">' +
+                      Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
+                      '</h3>' +
                       '<p>' + Drupal.t('So important notifications can be sent to you straight away.') + '</p>' +
                       '<small>' + Drupal.t('You can always disable it in the <strong>settings</strong> page') + '</small>' +
-                      '<button class="btn btn-default">' + Drupal.t('Not now') + '</button>' +
-                      '<button class="btn btn-primary">' + Drupal.t('Enable') + '</button></div>');
+                      '<div class="buttons"><button id="prompt-defer" class="btn btn-default">' + Drupal.t('Not' +
+                        ' now') + '</button>' +
+                      '<button id="prompt-accept" class="btn btn-primary">' + Drupal.t('Enable') + '</button></div></div>');
 
                     var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
                       dialogClass: 'ui-dialog_push-notification',
+                      modal: true,
                       width: 'auto'
                     });
-                    pushNotificationsDialog.show();
+                    pushNotificationsDialog.showModal();
                   }
                   else if (state === 'denied') {
                     // User denied push notifications. Disable the settings form.
@@ -125,6 +110,46 @@
             }
           });
       }
+
+      /**
+       * User clicked on 'not now'.
+       */
+      $('#prompt-defer').on('click', function (event) {
+        event.preventDefault();
+
+        $.ajax({
+          url: '/sw-subscription/prompt',
+          async: true,
+          complete: function(msg) {
+            // Close the dialog.
+            Drupal.dialog($('#social_pwa--prompt')).close();
+          }
+        });
+      });
+
+      /**
+       * User accepted push notifications.
+       */
+      $('#prompt-accept').on('click', function (event) {
+        event.preventDefault();
+
+        // Close the dialog.
+        Drupal.dialog($('#social_pwa--prompt')).close();
+
+        navigator.serviceWorker.ready.then(function (swRegistration) {
+          swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+          })
+            .then(function (subscription) {
+              updateSubscriptionOnServer(subscription);
+            })
+            .catch(function (err) {
+              // Delete the overlay since the user has denied.
+
+            });
+        })
+      });
 
       /**
        * Ask the user to receive push notifications through the browser prompt.
@@ -179,7 +204,7 @@
         });
 
         $.ajax({
-          url: '/subscription',
+          url: '/sw-subscription',
           type: 'POST',
           data: subscriptionData,
           dataType: "json",

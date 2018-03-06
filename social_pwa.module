@@ -140,12 +140,17 @@ function social_pwa_page_attachments(array &$page) {
     $page['#attached']['html_head'][] = [$value, $key];
   }
 
-
   // Check if we need to show a prompt for the user to accept push notifications.
-  // @todo: Write some logic here. For now just show it always.
-  $page['#attached']['library'][] = 'core/drupal.dialog.ajax';
-  $page['#attached']['library'][] = 'social_pwa/push-notification';
-  $page['#attached']['drupalSettings']['pushNotificationPrompt'] = TRUE;
+  $route = \Drupal::routeMatch()->getRouteObject();
+  $prompt = \Drupal::service('user.data')->get('social_pwa', $account->id(), 'prompt');
+  $prompt_enabled = \Drupal::config('social_pwa.settings')->get('status');
+
+  //
+  if (empty($prompt) && \Drupal::service('router.admin_context')->isAdminRoute($route) !== TRUE) {
+    $page['#attached']['library'][] = 'core/drupal.dialog.ajax';
+    $page['#attached']['library'][] = 'social_pwa/push-notification';
+    $page['#attached']['drupalSettings']['pushNotificationPrompt'] = TRUE;
+  }
 }
 
 /**
