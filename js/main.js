@@ -74,17 +74,10 @@
                 .then(function (state) {
                   // Check if we should prompt the user for enabling the push notifications.
                   if (state !== 'denied' && settings.pushNotificationPrompt === true) {
-                    // Create the prompt.
-                    createPushNotificationPrompt();
-
-                    var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
-                      dialogClass: 'ui-dialog_push-notification',
-                      modal: true,
-                      width: 'auto'
-                    });
-
-                    // Show the prompt.
-                    pushNotificationsDialog.showModal();
+                    // Create the prompt after x seconds.
+                    setTimeout(function() {
+                      createPushNotificationPrompt();
+                    }, 3000);
                   }
                   else if (state === 'denied') {
                     // User denied push notifications. Disable the settings form.
@@ -124,6 +117,15 @@
           '</button></div></div>';
 
         $('body').append(html);
+
+        var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
+          dialogClass: 'ui-dialog_push-notification',
+          modal: true,
+          width: 'auto'
+        });
+
+        // Show the prompt.
+        pushNotificationsDialog.showModal();
       }
 
       /**
@@ -132,6 +134,7 @@
       $(document.body).on('click', '#prompt-defer', function (event) {
         event.preventDefault();
 
+        // Register the prompt and close the dialog.
         registerPrompt();
       });
 
@@ -139,11 +142,9 @@
        * User accepted push notifications.
        */
       $(document.body).on('click', '#prompt-accept', function (event) {
-        event.preventDefault();
+        console.log('ello');
 
-        // Close the dialog.
-        Drupal.dialog($('#social_pwa--prompt')).close();
-        registerPrompt();
+        event.preventDefault();
 
         navigator.serviceWorker.ready.then(function (swRegistration) {
           swRegistration.pushManager.subscribe({
@@ -151,7 +152,15 @@
             applicationServerKey: applicationServerKey
           })
             .then(function (subscription) {
+              // Register the prompt and close the dialog.
+              registerPrompt();
+
+              // Update the subscription on the server.
               updateSubscriptionOnServer(subscription);
+            })
+            .catch(function() {
+              // Register the prompt and close the dialog.
+              registerPrompt();
             });
         })
       });
@@ -200,6 +209,7 @@
       function registerPrompt() {
         $.ajax({
           url: '/sw-subscription/prompt',
+          type: 'POST',
           async: true,
           complete: function() {
             // Close the dialog.
