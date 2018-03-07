@@ -140,11 +140,13 @@ function social_pwa_page_attachments(array &$page) {
     $page['#attached']['html_head'][] = [$value, $key];
   }
 
-  // Check if we need to show a prompt for the user to accept push notifications.
+  // Check if we need to show a prompt for the user to accept push
+  // notifications.
   $route = \Drupal::routeMatch()->getRouteObject();
   $prompt = \Drupal::service('user.data')->get('social_pwa', $account->id(), 'prompt');
 
-  // Show the dialog only if the user didn't see it yet and we're not on an admin page.
+  // Show the dialog only if the user didn't see it yet and we're not on an
+  // admin page.
   if (empty($prompt) && \Drupal::service('router.admin_context')->isAdminRoute($route) !== TRUE) {
     $prompt_time = \Drupal::config('social_pwa.settings')->get('prompt_timing');
     $page['#attached']['library'][] = 'core/drupal.dialog.ajax';
@@ -172,7 +174,8 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // Current user.
   $current_uid = Drupal::currentUser()->id();
 
-  // Hide the Push notifications fieldset if target and current user is not the same.
+  // Hide the Push notifications fieldset if target and current user is not the
+  // same.
   if ($uid !== $current_uid) {
     return;
   }

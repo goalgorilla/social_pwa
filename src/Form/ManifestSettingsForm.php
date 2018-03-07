@@ -4,7 +4,6 @@ namespace Drupal\social_pwa\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Routing\RequestContext;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Path\PathValidatorInterface;
@@ -110,7 +109,7 @@ class ManifestSettingsForm extends ConfigFormBase {
     $form['social_pwa_manifest_settings']['status_all'] = [
       '#type' => 'checkbox',
       '#title' => $this->t('Enable push notifications and PWA'),
-      '#default_value' => null !== $config->get('status.all') ? $config->get('status.all') : TRUE,
+      '#default_value' => NULL !== $config->get('status.all') ? $config->get('status.all') : TRUE,
       '#description' => $this->t('Disabling the push notifications and PWA will ensure that no user is able to configure and receive push notifications. Nor will any other Progressive Web App functions be available.'),
     ];
 
