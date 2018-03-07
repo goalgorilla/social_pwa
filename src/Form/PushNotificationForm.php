@@ -116,14 +116,12 @@ class PushNotificationForm extends FormBase {
       // Array of notifications.
       $notifications = [];
       foreach ($user_subscription as $subscription) {
-        foreach ($subscription as $key => $value) {
-          $notifications[] = [
-            'endpoint' => $subscription[$key]['endpoint'],
-            'payload' => $payload,
-            'userPublicKey' => $subscription[$key]['key'],
-            'userAuthToken' => $subscription[$key]['token'],
-          ];
-        }
+        $notifications[] = [
+          'endpoint' => $subscription['endpoint'],
+          'payload' => $payload,
+          'userPublicKey' => $subscription['key'],
+          'userAuthToken' => $subscription['token'],
+        ];
       }
 
       // Get the VAPID keys that were generated before.

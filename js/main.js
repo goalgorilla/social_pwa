@@ -206,6 +206,7 @@
         // Creating an overlay to provide focus to the permission prompt.
         $('body').append('<div class="social_pwa--overlay" style="width: 100%; height: 100%; position: fixed; background-color: rgba(0,0,0,0.5); left: 0; top: 0; z-index: 999;"></div>');
 
+        // If the user is subscribed, we'll now remove the subscription.
         if (isSubscribed) {
           removeSubscriptionFromServer(subscriptionKey);
           $('.social_pwa--overlay').remove();
@@ -213,6 +214,7 @@
           subscriptionKey = null;
         }
         else {
+          // User is not yet subscribed, add the subscription.
           navigator.serviceWorker.ready.then(function (swRegistration) {
             swRegistration.pushManager.subscribe({
               userVisibleOnly: true,
@@ -223,6 +225,7 @@
                 $('.social_pwa--overlay').remove();
                 updateSubscriptionOnServer(subscription);
                 isSubscribed = true;
+                toggleElement.attr('checked', true);
               })
               .catch(function (error) {
                 // Delete the overlay since the user has denied.
