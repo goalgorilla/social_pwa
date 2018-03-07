@@ -69,9 +69,3 @@ self.addEventListener('notificationclick', function(event) {
     })
   );
 });
-
-self.addEventListener('fetch', function(event) {
-  if ('cache' in self) {
-    cache.put('/');
-  }
-});
