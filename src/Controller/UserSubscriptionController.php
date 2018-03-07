@@ -27,25 +27,24 @@ class UserSubscriptionController extends ControllerBase {
     $ua = $_SERVER['HTTP_USER_AGENT'];
     // Get the data related to the user agent.
     $bd = new BrowserDetector($ua);
-    // Get the device and browser formatted description.
-    $browser = $bd->getFormattedDescription();
+
+    // Decode the content.
+    $subscription_data = json_decode(\Drupal::request()->getContent(), TRUE);
 
     // Prepare an array with the browser name and put in the subscription.
-    $subscriptionData[$browser] = json_decode(\Drupal::request()->getContent(), TRUE);
+    $subscription_data['browser'] = $bd->getFormattedDescription();
+
     // Get the user data.
-    $user_data = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+    $user_subscriptions = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
 
-    // Check if there already is an subscription object that
-    // matches this subscription object.
-    if (!in_array($subscriptionData[$browser], $user_data)) {
-      // First we used to set user_data to NULL since we only wanted to update
-      // but now we add every subscription for a new device or browser to the
-      // user_data table.
-      $user_data[] = $subscriptionData;
+    // If we have a key we can save the subscription.
+    if (isset($subscription_data['key'])) {
+      $user_subscriptions[$subscription_data['key']] = $subscription_data;
 
-      // And save it again.
-      \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_data);
+      // Save the subscription.
+      \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_subscriptions);
     }
+
     return new Response();
   }
 
@@ -58,24 +57,20 @@ class UserSubscriptionController extends ControllerBase {
   public function removeSubscription() {
     // The user id.
     $uid = \Drupal::currentUser()->id();
-    // The user agent.
-    $ua = $_SERVER['HTTP_USER_AGENT'];
-    // Get the data related to the user agent.
-    $bd = new BrowserDetector($ua);
-    // Get the device and browser formatted description.
-    $browser = $bd->getFormattedDescription();
+
+    // Decode the content.
+    $subscription_data = json_decode(\Drupal::request()->getContent(), TRUE);
+
     // Get the user data.
     $user_subscriptions = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
-    // Loop through the subscriptions to see which one we need to remove.
-    foreach ($user_subscriptions as $key => $subscription) {
-      foreach ($subscription as $value) {
-        if (array_key_exists($browser, $subscription)) {
-          unset($user_subscriptions[$key]);
-        }
-      }
+
+    // Remove a subscription if we have a key.
+    if (isset($subscription_data['key'])) {
+      unset($user_subscriptions[$subscription_data['key']]);
+
+      // Delete the subscription.
+      \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_subscriptions);
     }
-    // Delete the subscription.
-    \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_subscriptions);
 
     return new AjaxResponse(NULL, 200);
   }

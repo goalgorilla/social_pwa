@@ -63,6 +63,11 @@ function social_pwa_page_attachments(array &$page) {
   $vapid_keys = \Drupal::state()->get('social_pwa.vapid_keys');
   $page['#attached']['drupalSettings']['vapidPublicKey'] = $vapid_keys['public'];
 
+  // Get all the subscriptions for this user and attach them to the page.
+  $user_subscriptions = \Drupal::service('user.data')
+    ->get('social_pwa', $account->id(), 'subscription');
+  $page['#attached']['drupalSettings']['pushNotificationSubscriptions'] = !empty($user_subscriptions) ? array_keys($user_subscriptions) : [];
+
   // Attach the generated data from /manifest.json.
   $page['#attached']['html_head_link'][][] = [
     // Get the contents of the Manifest.
@@ -219,109 +224,79 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
     ],
   ];
 
-  if (!empty($user_subscriptions)) {
-    $current_browser_subscribed = TRUE;
+  // Prepare the toggle element. We determine default value in the frontend.
+  $form['push_notifications']['current_device']['toggle'] = [
+    '#type' => 'checkbox',
+    '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
+    '#disabled' => FALSE,
+    '#default_value' => FALSE,
+    '#attributes' => [
+      'data-switch' => TRUE,
+    ],
+  ];
 
-    foreach ($user_subscriptions as $subscription) {
-      if (array_key_exists($device_description, $subscription)) {
-        $current_browser_subscribed = FALSE;
-        break;
+  // Get the help text for enabling push notifications per (major) browser.
+  switch ($bd->getBrowserName()) {
+    case 'Chrome':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3D';
+
+      $operating_systems = ['Android', 'iOS'];
+      $operating_system = $bd->getOsName();
+
+      if (in_array($operating_system, $operating_systems)) {
+        $url .= $operating_system;
       }
-    }
+      else {
+        $url .= 'Desktop';
+      }
 
-    if ($current_browser_subscribed) {
-      return;
-    }
+      $url .= '&oco=1';
+      break;
 
-    // User has subscription, provide switch to turn it off.
-    $form['push_notifications']['current_device']['current_allowed'] = [
-      '#type' => 'checkbox',
-      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
-      '#disabled' => FALSE,
-      // Check on this value?.
-      '#default_value' => TRUE,
-      '#attributes' => [
-        'data-switch' => TRUE,
-      ],
-      '#ajax' => [
-        'callback' => 'Drupal\social_pwa\Controller\UserSubscriptionController::removeSubscription',
-        'progress' => ['type' => 'none'],
-      ],
-    ];
+    case 'Chrome Mobile':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DAndroid&oco=1';
+      break;
+
+    case 'Chrome Mobile iOS':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DiOS&oco=1';
+      break;
+
+    case 'Firefox':
+    case 'Firefox Focus':
+    case 'Firefox Mobile':
+      $url = 'https://support.mozilla.org/en-US/kb/push-notifications-firefox';
+      break;
+
+    case 'Microsoft Edge':
+      $url = 'https://blogs.windows.com/msedgedev/2016/05/16/web-notifications-microsoft-edge';
+      break;
+
+    case 'Opera':
+    case 'Opera Mini':
+    case 'Opera Mobile':
+    case 'Opera Next':
+      $url = 'http://help.opera.com/opera/Windows/1656/en/controlPages.html#manageNotifications';
+      break;
+  }
+
+  // Prepare the text. If we have an url we can point the user in the right direction.
+  if (isset($url)) {
+    $text = t('You have denied receiving push notifications through your browser. Please <a href="@url" target="_blank">reset your browser setting</a> for receiving notifications.', [
+      '@url' => $url,
+    ]);
   }
   else {
-    // User doesn't have subscription, provide switch to turn it on.
-    // This already triggers the prompt in the browser through JS.
-    $form['push_notifications']['current_device']['current'] = [
-      '#type' => 'checkbox',
-      '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
-      '#disabled' => FALSE,
-      '#default_value' => FALSE,
-      '#attributes' => [
-        'data-switch' => TRUE,
-      ],
-    ];
-
-    switch ($bd->getBrowserName()) {
-      case 'Chrome':
-        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3D';
-
-        $operating_systems = ['Android', 'iOS'];
-        $operating_system = $bd->getOsName();
-
-        if (in_array($operating_system, $operating_systems)) {
-          $url .= $operating_system;
-        }
-        else {
-          $url .= 'Desktop';
-        }
-
-        $url .= '&oco=1';
-        break;
-
-      case 'Chrome Mobile':
-        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DAndroid&oco=1';
-        break;
-
-      case 'Chrome Mobile iOS':
-        $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DiOS&oco=1';
-        break;
-
-      case 'Firefox':
-      case 'Firefox Focus':
-      case 'Firefox Mobile':
-        $url = 'https://support.mozilla.org/en-US/kb/push-notifications-firefox';
-        break;
-
-      case 'Microsoft Edge':
-        $url = 'https://blogs.windows.com/msedgedev/2016/05/16/web-notifications-microsoft-edge';
-        break;
-
-      case 'Opera':
-      case 'Opera Mini':
-      case 'Opera Mobile':
-      case 'Opera Next':
-        $url = 'http://help.opera.com/opera/Windows/1656/en/controlPages.html#manageNotifications';
-        break;
-    }
-
-    if (isset($url)) {
-      $text = t('You have denied receiving push notifications through your browser. Please <a href="@url" target="_blank">reset your browser setting</a> for receiving notifications.', [
-        '@url' => $url,
-      ]);
-    }
-    else {
-      $text = t('You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.');
-    }
-
-    $form['push_notifications']['current_device']['blocked_notice'] = [
-      '#type' => 'html_tag',
-      '#tag' => 'div',
-      '#attributes' => [
-        'class' => ['help-block', 'blocked-notice', 'hide'],
-      ],
-      '#value' => $text,
-    ];
+    $text = t('You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.');
   }
+
+  // Prepare the blocked notice element with the help text.
+  $form['push_notifications']['current_device']['blocked_notice'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#attributes' => [
+      'class' => ['help-block', 'blocked-notice', 'hide'],
+    ],
+    '#value' => $text,
+  ];
 
 }
