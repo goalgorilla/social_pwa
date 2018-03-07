@@ -146,9 +146,11 @@ function social_pwa_page_attachments(array &$page) {
 
   // Show the dialog only if the user didn't see it yet and we're not on an admin page.
   if (empty($prompt) && \Drupal::service('router.admin_context')->isAdminRoute($route) !== TRUE) {
+    $prompt_time = \Drupal::config('social_pwa.settings')->get('prompt_timing');
     $page['#attached']['library'][] = 'core/drupal.dialog.ajax';
     $page['#attached']['library'][] = 'social_pwa/push-notification';
     $page['#attached']['drupalSettings']['pushNotificationPrompt'] = TRUE;
+    $page['#attached']['drupalSettings']['pushNotificationPromptTime'] = (isset($prompt_time) && is_numeric($prompt_time)) ? $prompt_time : 3;
   }
 }
 

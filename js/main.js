@@ -73,11 +73,11 @@
               })
                 .then(function (state) {
                   // Check if we should prompt the user for enabling the push notifications.
-                  if (state !== 'denied' && settings.pushNotificationPrompt === true) {
+                  if (state !== 'denied' && settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
                     // Create the prompt after x seconds.
                     setTimeout(function() {
                       createPushNotificationPrompt();
-                    }, 3000);
+                    }, settings.pushNotificationPromptTime * 1000);
                   }
                   else if (state === 'denied') {
                     // User denied push notifications. Disable the settings form.
