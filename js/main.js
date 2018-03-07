@@ -65,7 +65,6 @@
               console.log('[PWA] - User has already accepted push.');
               // return;
             } else {
-              // TODO: Custom install prompt story.
               console.log('[PWA] - User has not accepted push yet...');
 
               swRegistration.pushManager.permissionState({
@@ -73,7 +72,15 @@
                 applicationServerKey: applicationServerKey
               })
                 .then(function (state) {
-                  if (state == 'denied') {
+                  // Check if we should prompt the user for enabling the push notifications.
+                  if (state !== 'denied' && settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
+                    // Create the prompt after x seconds.
+                    setTimeout(function() {
+                      createPushNotificationPrompt();
+                    }, settings.pushNotificationPromptTime * 1000);
+                  }
+                  else if (state === 'denied') {
+                    // User denied push notifications. Disable the settings form.
                     var $allowed = $('#edit-push-notifications-current-device-current-allowed');
                     if ($allowed.length) {
                       $allowed.attr({
@@ -81,7 +88,7 @@
                         disabled: true
                       });
 
-                      $.post('/subscription/remove');
+                      $.post('/sw-subscription/remove');
                     }
 
                     blockSwitcher();
@@ -90,6 +97,71 @@
             }
           });
       }
+
+      /**
+       * Create the prompt dialog for the push notification.
+       */
+      function createPushNotificationPrompt() {
+        // Create the prompt.
+        var html = '<div id="social_pwa--prompt">' +
+          '<h3 class="ui-dialog-message-title">' +
+          Drupal.t('Would you like to enable <strong>push notifications</strong>?') +
+          '</h3><p>' +
+          Drupal.t('Choose enable to receive important updates straight away!') +
+          '</p><small>' +
+          Drupal.t('These can always be disabled in <strong>Settings</strong>.') +
+          '</small><div class="buttons"><button id="prompt-defer" class="btn btn-default">' +
+          Drupal.t('Not now') +
+          '</button><button id="prompt-accept" class="btn btn-primary">' +
+          Drupal.t('Enable') +
+          '</button></div></div>';
+
+        $('body').append(html);
+
+        var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
+          dialogClass: 'ui-dialog_push-notification',
+          modal: true,
+          width: 'auto'
+        });
+
+        // Show the prompt.
+        pushNotificationsDialog.showModal();
+      }
+
+      /**
+       * User clicked on 'not now'.
+       */
+      $(document.body).on('click', '#prompt-defer', function (event) {
+        event.preventDefault();
+
+        // Register the prompt and close the dialog.
+        registerPrompt();
+      });
+
+      /**
+       * User accepted push notifications.
+       */
+      $(document.body).on('click', '#prompt-accept', function (event) {
+        event.preventDefault();
+
+        navigator.serviceWorker.ready.then(function (swRegistration) {
+          swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: applicationServerKey
+          })
+            .then(function (subscription) {
+              // Register the prompt and close the dialog.
+              registerPrompt();
+
+              // Update the subscription on the server.
+              updateSubscriptionOnServer(subscription);
+            })
+            .catch(function() {
+              // Register the prompt and close the dialog.
+              registerPrompt();
+            });
+        })
+      });
 
       /**
        * Ask the user to receive push notifications through the browser prompt.
@@ -130,7 +202,22 @@
       });
 
       /**
-       * Update the subscription to te database through a callback.
+       * Register that user saw the push notification prompt to the server.
+       */
+      function registerPrompt() {
+        $.ajax({
+          url: '/sw-subscription/prompt',
+          type: 'POST',
+          async: true,
+          complete: function() {
+            // Close the dialog.
+            Drupal.dialog($('#social_pwa--prompt')).close();
+          }
+        });
+      }
+
+      /**
+       * Update the subscription to the database through a callback.
        */
       function updateSubscriptionOnServer(subscription) {
 
@@ -144,7 +231,7 @@
         });
 
         $.ajax({
-          url: '/subscription',
+          url: '/sw-subscription',
           type: 'POST',
           data: subscriptionData,
           dataType: "json",

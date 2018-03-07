@@ -71,6 +71,7 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
+  // Cache this page so the homescreen install banner works.
   if ('cache' in self) {
     cache.put('/');
   }

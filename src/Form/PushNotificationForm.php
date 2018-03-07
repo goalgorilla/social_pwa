@@ -4,7 +4,6 @@ namespace Drupal\social_pwa\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Url;
 use Drupal\user\Entity\User;
 use Minishlink\WebPush\WebPush;
