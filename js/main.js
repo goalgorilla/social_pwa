@@ -70,11 +70,10 @@
             checkSubscription();
           })
           .catch(function (error) {
-            console.error('[PWA] - Service Worker Error', error);
+            console.error('Service Worker error: ', error);
           });
       }
       else {
-        console.warn('[PWA] - Push messaging is not supported');
         toggleElement.attr('disabled', true);
         $('.blocked-notice').html(Drupal.t('Your browser does not support push notifications.'));
         $('.social_pwa--overlay').remove();
@@ -98,16 +97,12 @@
               }
             }
 
+            // If the user is currently subscribed turn the toggle on.
             if (isSubscribed) {
-              console.log('[PWA] - User has already accepted push.');
-
               // Switch toggle to on.
               toggleElement.attr('checked', true);
-              console.log('subscribed');
             }
             else {
-              console.log('[PWA] - User has not accepted push yet or blocked it...');
-
               swRegistration.pushManager.permissionState({
                 userVisibleOnly: true,
                 applicationServerKey: applicationServerKey
@@ -206,6 +201,7 @@
        */
       toggleElement.on('click', function (event) {
         event.preventDefault();
+        $(this).attr('disabled', true);
 
         // Creating an overlay to provide focus to the permission prompt.
         $('body').append('<div class="social_pwa--overlay" style="width: 100%; height: 100%; position: fixed; background-color: rgba(0,0,0,0.5); left: 0; top: 0; z-index: 999;"></div>');
@@ -215,7 +211,6 @@
           $('.social_pwa--overlay').remove();
           isSubscribed = false;
           subscriptionKey = null;
-          toggleElement.attr('checked', false);
         }
         else {
           navigator.serviceWorker.ready.then(function (swRegistration) {
@@ -228,11 +223,10 @@
                 $('.social_pwa--overlay').remove();
                 updateSubscriptionOnServer(subscription);
                 isSubscribed = true;
-                toggleElement.attr('checked', true);
               })
-              .catch(function (err) {
+              .catch(function (error) {
                 // Delete the overlay since the user has denied.
-                console.log('[PWA] - Failed to subscribe the user: ', err);
+                console.log('Failed to subscribe the user: ', error);
                 toggleElement.attr('checked', false);
                 blockSwitcher();
               });
@@ -276,11 +270,8 @@
           dataType: 'json',
           contentType: 'application/json;charset=utf-8',
           async: true,
-          fail: function() {
-            console.log('[PWA] - Something went wrong during subscription update.');
-          },
           complete: function() {
-            console.log('[PWA] - Subscription added to database.');
+            toggleElement.attr('disabled', false);
           }
         });
 
@@ -302,11 +293,8 @@
           dataType: 'json',
           contentType: 'application/json;charset=utf-8',
           async: true,
-          fail: function() {
-            console.log('[PWA] - Something went wrong during subscription removal.');
-          },
           complete: function() {
-            console.log('[PWA] - Subscription removed from database.');
+            toggleElement.attr('disabled', false);
           }
         });
 
