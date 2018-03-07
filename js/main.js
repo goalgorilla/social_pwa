@@ -105,11 +105,11 @@
         // Create the prompt.
         var html = '<div id="social_pwa--prompt">' +
           '<h3 class="ui-dialog-message-title">' +
-          Drupal.t('Would you like to enable <strong>push notifications?</strong>') +
+          Drupal.t('Would you like to enable <strong>push notifications</strong>?') +
           '</h3><p>' +
-          Drupal.t('So important notifications can be sent to you straight away.') +
+          Drupal.t('Choose enable to receive important updates straight away!') +
           '</p><small>' +
-          Drupal.t('You can always disable it in the <strong>settings</strong> page.') +
+          Drupal.t('These can always be disabled in <strong>Settings</strong>.') +
           '</small><div class="buttons"><button id="prompt-defer" class="btn btn-default">' +
           Drupal.t('Not now') +
           '</button><button id="prompt-accept" class="btn btn-primary">' +
