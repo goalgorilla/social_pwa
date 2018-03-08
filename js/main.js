@@ -188,10 +188,10 @@
       /**
        * Subscribes the user to the database.
        *
-       * @param registerPrompt
+       * @param prompt
        *   Registers the prompt if applicable.
        */
-      function subscribeUser(registerPrompt) {
+      function subscribeUser(prompt) {
         // User is not yet subscribed, add the subscription.
         navigator.serviceWorker.ready.then(function (swRegistration) {
           swRegistration.pushManager.subscribe({
@@ -210,7 +210,7 @@
               toggleElement.attr('checked', true);
 
               // If we need to register the prompt, let's do it now.
-              if (registerPrompt === true) {
+              if (prompt === true) {
                 // Register the prompt and close the dialog.
                 registerPrompt();
               }
@@ -224,7 +224,7 @@
               blockSwitcher();
 
               // If we need to register the prompt, let's do it now.
-              if (registerPrompt === true) {
+              if (prompt === true) {
                 // Register the prompt and close the dialog.
                 registerPrompt();
               }
