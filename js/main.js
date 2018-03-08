@@ -108,6 +108,10 @@
                 applicationServerKey: applicationServerKey
               })
                 .then(function (state) {
+                  if (state === 'granted') {
+                    // User granted permissions, but does not have a subscription yet.
+                    subscribeUser();
+                  }
                   if (state !== 'denied') {
                     // Check if we should prompt the user for enabling the push notifications.
                     if (settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
@@ -177,24 +181,56 @@
       $(document.body).on('click', '#prompt-accept', function (event) {
         event.preventDefault();
 
+        // Subscribe the user.
+        subscribeUser(true);
+      });
+
+      /**
+       * Subscribes the user to the database.
+       *
+       * @param registerPrompt
+       *   Registers the prompt if applicable.
+       */
+      function subscribeUser(registerPrompt) {
+        // User is not yet subscribed, add the subscription.
         navigator.serviceWorker.ready.then(function (swRegistration) {
           swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
           })
             .then(function (subscription) {
-              // Register the prompt and close the dialog.
-              registerPrompt();
-
-              // Update the subscription on the server.
+              // Push subscription to the server.
               updateSubscriptionOnServer(subscription);
+              isSubscribed = true;
+
+              // Delete the overlay since the user has accepted.
+              $('.social_pwa--overlay').remove();
+
+              // Mark the toggle element as checked (if it exists).
+              toggleElement.attr('checked', true);
+
+              // If we need to register the prompt, let's do it now.
+              if (registerPrompt === true) {
+                // Register the prompt and close the dialog.
+                registerPrompt();
+              }
             })
-            .catch(function() {
-              // Register the prompt and close the dialog.
-              registerPrompt();
+            .catch(function (error) {
+              // Delete the overlay since the user has denied.
+              console.log('Failed to subscribe the user: ', error);
+
+              // Make sure elements are checked if needed.
+              toggleElement.attr('checked', false);
+              blockSwitcher();
+
+              // If we need to register the prompt, let's do it now.
+              if (registerPrompt === true) {
+                // Register the prompt and close the dialog.
+                registerPrompt();
+              }
             });
-        })
-      });
+        });
+      }
 
       /**
        * Ask the user to receive push notifications through the browser prompt.
@@ -215,25 +251,7 @@
         }
         else {
           // User is not yet subscribed, add the subscription.
-          navigator.serviceWorker.ready.then(function (swRegistration) {
-            swRegistration.pushManager.subscribe({
-              userVisibleOnly: true,
-              applicationServerKey: applicationServerKey
-            })
-              .then(function (subscription) {
-                // Delete the overlay since the user has accepted.
-                $('.social_pwa--overlay').remove();
-                updateSubscriptionOnServer(subscription);
-                isSubscribed = true;
-                toggleElement.attr('checked', true);
-              })
-              .catch(function (error) {
-                // Delete the overlay since the user has denied.
-                console.log('Failed to subscribe the user: ', error);
-                toggleElement.attr('checked', false);
-                blockSwitcher();
-              });
-          })
+          subscribeUser();
         }
       });
 
