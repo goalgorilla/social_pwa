@@ -117,11 +117,7 @@
                 }
                 else {
                   // User is currently not subscribed.
-                  if (state === 'granted') {
-                    // User granted permissions, but does not have a subscription yet.
-                    subscribeUser();
-                  }
-                  else if (state !== 'denied') {
+                  if (state !== 'denied') {
                     // Check if we should prompt the user for enabling the push notifications.
                     if (settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
                       // Create the prompt after x seconds.
