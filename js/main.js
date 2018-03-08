@@ -107,12 +107,12 @@
                 if (isSubscribed) {
                   if (state === 'granted') {
                     // Switch toggle to on, user is subscribed and granted permission.
-                    toggleElement.attr('checked', true);
+                    toggleSwitcher(true);
                   }
                   else {
                     // Is subscribed, but didn't grant permissions.
                     isSubscribed = false;
-                    toggleElement.attr('checked', false);
+                    toggleSwitcher(false);
                   }
                 }
                 else {
@@ -128,10 +128,7 @@
                   }
                   else if (state === 'denied') {
                     // User denied push notifications. Disable the settings form.
-                    toggleElement.attr({
-                      checked: false,
-                      disabled: true
-                    });
+                    toggleSwitcher(false, true);
 
                     blockSwitcher();
                   }
@@ -212,7 +209,7 @@
               $('.social_pwa--overlay').remove();
 
               // Mark the toggle element as checked (if it exists).
-              toggleElement.attr('checked', true);
+              toggleSwitcher(true);
 
               // If we need to register the prompt, let's do it now.
               if (prompt === true) {
@@ -225,7 +222,7 @@
               console.log('Failed to subscribe the user: ', error);
 
               // Make sure elements are checked if needed.
-              toggleElement.attr('checked', false);
+              toggleSwitcher(false);
               blockSwitcher();
 
               // If we need to register the prompt, let's do it now.
@@ -297,7 +294,7 @@
           contentType: 'application/json;charset=utf-8',
           async: true,
           complete: function() {
-            toggleElement.attr('disabled', false);
+            toggleSwitcher(true, false);
           }
         });
 
@@ -320,8 +317,7 @@
           contentType: 'application/json;charset=utf-8',
           async: true,
           complete: function() {
-            toggleElement.attr('disabled', false);
-            toggleElement.attr('checked', false);
+            toggleSwitcher(false, false);
           }
         });
 
@@ -340,6 +336,25 @@
           endpoint += '/' + subscriptionId;
         }
         return endpoint;
+      }
+
+      /**
+       * Toggle the switch element to on, off or disabled.
+       *
+       * @param state
+       *   Boolean indicating if the element should be on or off.
+       * @param disabled
+       *   Boolean indicating if the element should be disabled or not.
+       */
+      function toggleSwitcher(state, disabled) {
+        if (typeof state !== 'undefined') {
+          toggleElement.attr('checked', state);
+          toggleElement.prop('checked', state);
+        }
+
+        if (typeof disabled !== 'undefined') {
+          toggleElement.attr('disabled', disabled);
+        }
       }
 
       /**
