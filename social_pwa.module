@@ -194,10 +194,6 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // The device/browser description.
   $device_description = $bd->getFormattedDescription();
 
-  // Get all the subscriptions for this user.
-  $user_subscriptions = \Drupal::service('user.data')
-    ->get('social_pwa', $uid, 'subscription');
-
   // Get the uploaded icon.
   $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
 
