@@ -97,22 +97,31 @@
               }
             }
 
-            // If the user is currently subscribed turn the toggle on.
-            if (isSubscribed) {
-              // Switch toggle to on.
-              toggleElement.attr('checked', true);
-            }
-            else {
-              swRegistration.pushManager.permissionState({
-                userVisibleOnly: true,
-                applicationServerKey: applicationServerKey
-              })
-                .then(function (state) {
+            // Get permissions state.
+            swRegistration.pushManager.permissionState({
+              userVisibleOnly: true,
+              applicationServerKey: applicationServerKey
+            })
+              .then(function (state) {
+                // We think the user is currently subscribed.
+                if (isSubscribed) {
+                  if (state === 'granted') {
+                    // Switch toggle to on, user is subscribed and granted permission.
+                    toggleElement.attr('checked', true);
+                  }
+                  else {
+                    // Is subscribed, but didn't grant permissions.
+                    isSubscribed = false;
+                    toggleElement.attr('checked', false);
+                  }
+                }
+                else {
+                  // User is currently not subscribed.
                   if (state === 'granted') {
                     // User granted permissions, but does not have a subscription yet.
                     subscribeUser();
                   }
-                  if (state !== 'denied') {
+                  else if (state !== 'denied') {
                     // Check if we should prompt the user for enabling the push notifications.
                     if (settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
                       // Create the prompt after x seconds.
@@ -130,8 +139,8 @@
 
                     blockSwitcher();
                   }
-                });
-            }
+                }
+              });
           });
       }
 
@@ -302,9 +311,9 @@
       /**
        * Update the subscription to the database through a callback.
        */
-      function removeSubscriptionFromServer(subscriptionKey) {
+      function removeSubscriptionFromServer(key) {
         var subscriptionData = JSON.stringify({
-          'key': subscriptionKey
+          'key': key
         });
 
         $.ajax({
@@ -316,6 +325,7 @@
           async: true,
           complete: function() {
             toggleElement.attr('disabled', false);
+            toggleElement.attr('checked', false);
           }
         });
 
