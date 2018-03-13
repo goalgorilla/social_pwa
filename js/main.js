@@ -16,8 +16,17 @@
 
       var isSubscribed = false;
       var swRegistration = null;
-      var canClick = true;
+      var subscriptionKey = null;
+      var toggleElement = $('#edit-push-notifications-current-device-toggle');
 
+      /**
+       * Convert a Base64 encoded string to an ArrayBuffer.
+       *
+       * @param base64String
+       *   A Base64 encoded string.
+       * @returns {Uint8Array}
+       *   The converted ArrayBuffer.
+       */
       function urlBase64ToUint8Array(base64String) {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)
@@ -34,6 +43,24 @@
       }
 
       /**
+       * Creates a Base64 encoded string from an ArrayBuffer.
+       *
+       * @param buffer
+       *   The ArrayBuffer.
+       * @returns {string}
+       *   A Base64 encoded string.
+       */
+      function arrayBufferToBase64(buffer) {
+        var binary = '';
+        var bytes = new Uint8Array(buffer);
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+          binary += String.fromCharCode( bytes[ i ] );
+        }
+        return window.btoa(binary);
+      }
+
+      /**
        * Check if ServiceWorkers and Push are supported in the browser.
        */
       if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -43,11 +70,11 @@
             checkSubscription();
           })
           .catch(function (error) {
-            console.error('[PWA] - Service Worker Error', error);
+            console.error('Service Worker error: ', error);
           });
-      } else {
-        console.warn('[PWA] - Push messaging is not supported');
-        $('#edit-push-notifications-current-device-current').attr('disabled', true);
+      }
+      else {
+        toggleElement.attr('disabled', true);
         $('.blocked-notice').html(Drupal.t('Your browser does not support push notifications.'));
         $('.social_pwa--overlay').remove();
       }
@@ -59,42 +86,54 @@
         // Set the initial subscription value.
         swRegistration.pushManager.getSubscription()
           .then(function (subscription) {
-            isSubscribed = !(subscription === null);
+            // Check subscription.
+            isSubscribed = false;
 
-            if (isSubscribed) {
-              console.log('[PWA] - User has already accepted push.');
-              // return;
-            } else {
-              console.log('[PWA] - User has not accepted push yet...');
+            if (subscription !== null && typeof settings.pushNotificationSubscriptions !== "undefined") {
+              subscriptionKey = arrayBufferToBase64(subscription.getKey('p256dh'));
+              // Check if subscription key is known in the database.
+              if ($.inArray(subscriptionKey, settings.pushNotificationSubscriptions) !== -1) {
+                isSubscribed = true;
+              }
+            }
 
-              swRegistration.pushManager.permissionState({
-                userVisibleOnly: true,
-                applicationServerKey: applicationServerKey
-              })
-                .then(function (state) {
-                  // Check if we should prompt the user for enabling the push notifications.
-                  if (state !== 'denied' && settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
-                    // Create the prompt after x seconds.
-                    setTimeout(function() {
-                      createPushNotificationPrompt();
-                    }, settings.pushNotificationPromptTime * 1000);
+            // Get permissions state.
+            swRegistration.pushManager.permissionState({
+              userVisibleOnly: true,
+              applicationServerKey: applicationServerKey
+            })
+              .then(function (state) {
+                // We think the user is currently subscribed.
+                if (isSubscribed) {
+                  if (state === 'granted') {
+                    // Switch toggle to on, user is subscribed and granted permission.
+                    toggleSwitcher(true);
+                  }
+                  else {
+                    // Is subscribed, but didn't grant permissions.
+                    isSubscribed = false;
+                    toggleSwitcher(false);
+                  }
+                }
+                else {
+                  // User is currently not subscribed.
+                  if (state !== 'denied') {
+                    // Check if we should prompt the user for enabling the push notifications.
+                    if (settings.pushNotificationPrompt === true && typeof settings.pushNotificationPromptTime !== "undefined") {
+                      // Create the prompt after x seconds.
+                      setTimeout(function () {
+                        createPushNotificationPrompt();
+                      }, settings.pushNotificationPromptTime * 1000);
+                    }
                   }
                   else if (state === 'denied') {
                     // User denied push notifications. Disable the settings form.
-                    var $allowed = $('#edit-push-notifications-current-device-current-allowed');
-                    if ($allowed.length) {
-                      $allowed.attr({
-                        checked: false,
-                        disabled: true
-                      });
-
-                      $.post('/sw-subscription/remove');
-                    }
+                    toggleSwitcher(false, true);
 
                     blockSwitcher();
                   }
-                });
-            }
+                }
+              });
           });
       }
 
@@ -144,61 +183,78 @@
       $(document.body).on('click', '#prompt-accept', function (event) {
         event.preventDefault();
 
+        // Subscribe the user.
+        subscribeUser(true);
+      });
+
+      /**
+       * Subscribes the user to the database.
+       *
+       * @param prompt
+       *   Registers the prompt if applicable.
+       */
+      function subscribeUser(prompt) {
+        // User is not yet subscribed, add the subscription.
         navigator.serviceWorker.ready.then(function (swRegistration) {
           swRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: applicationServerKey
           })
             .then(function (subscription) {
-              // Register the prompt and close the dialog.
-              registerPrompt();
-
-              // Update the subscription on the server.
+              // Push subscription to the server.
               updateSubscriptionOnServer(subscription);
+              isSubscribed = true;
+
+              // Delete the overlay since the user has accepted.
+              $('.social_pwa--overlay').remove();
+
+              // Mark the toggle element as checked (if it exists).
+              toggleSwitcher(true);
+
+              // If we need to register the prompt, let's do it now.
+              if (prompt === true) {
+                // Register the prompt and close the dialog.
+                registerPrompt();
+              }
             })
-            .catch(function() {
-              // Register the prompt and close the dialog.
-              registerPrompt();
+            .catch(function (error) {
+              // Delete the overlay since the user has denied.
+              console.log('Failed to subscribe the user: ', error);
+
+              // Make sure elements are checked if needed.
+              toggleSwitcher(false);
+              blockSwitcher();
+
+              // If we need to register the prompt, let's do it now.
+              if (prompt === true) {
+                // Register the prompt and close the dialog.
+                registerPrompt();
+              }
             });
-        })
-      });
+        });
+      }
 
       /**
        * Ask the user to receive push notifications through the browser prompt.
        */
-      $('#edit-push-notifications-current-device-current').on('click', function (event) {
-        if (!canClick) {
-          canClick = true;
-          return;
-        }
-
+      toggleElement.on('click', function (event) {
         event.preventDefault();
-
-        var self = $(this);
+        $(this).attr('disabled', true);
 
         // Creating an overlay to provide focus to the permission prompt.
         $('body').append('<div class="social_pwa--overlay" style="width: 100%; height: 100%; position: fixed; background-color: rgba(0,0,0,0.5); left: 0; top: 0; z-index: 999;"></div>');
 
-        navigator.serviceWorker.ready.then(function (swRegistration) {
-          swRegistration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: applicationServerKey
-          })
-            .then(function (subscription) {
-              // Delete the overlay since the user has accepted.
-              $('.social_pwa--overlay').remove();
-              updateSubscriptionOnServer(subscription);
-              isSubscribed = true;
-              canClick = false;
-              self.click();
-            })
-            .catch(function (err) {
-              // Delete the overlay since the user has denied.
-              console.log('[PWA] - Failed to subscribe the user: ', err);
-              $('#edit-push-notifications-current-device-current').attr('checked', false);
-              blockSwitcher();
-            });
-        })
+        // If the user is subscribed, we'll now remove the subscription.
+        if (isSubscribed) {
+          removeSubscriptionFromServer(subscriptionKey);
+          $('.social_pwa--overlay').remove();
+          isSubscribed = false;
+          subscriptionKey = null;
+        }
+        else {
+          // User is not yet subscribed, add the subscription.
+          subscribeUser();
+        }
       });
 
       /**
@@ -221,29 +277,50 @@
        */
       function updateSubscriptionOnServer(subscription) {
 
-        var key = subscription.getKey('p256dh');
+        subscriptionKey = subscription.getKey('p256dh') ? arrayBufferToBase64(subscription.getKey('p256dh')) : null;
         var token = subscription.getKey('auth');
 
         var subscriptionData = JSON.stringify({
           'endpoint': getEndpoint(subscription),
-          'key': key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : null,
-          'token': token ? btoa(String.fromCharCode.apply(null, new Uint8Array(token))) : null
+          'key': subscriptionKey,
+          'token': token ? arrayBufferToBase64(token) : null
         });
 
         $.ajax({
           url: '/sw-subscription',
           type: 'POST',
           data: subscriptionData,
-          dataType: "json",
-          contentType: "application/json;charset=utf-8",
+          dataType: 'json',
+          contentType: 'application/json;charset=utf-8',
           async: true,
-          fail: function(msg) {
-            console.log('[PWA] - Something went wrong during subscription update.');
-          },
-          complete: function(msg) {
-            console.log('[PWA] - Subscription added to database.');
+          complete: function() {
+            toggleSwitcher(true, false);
           }
         });
+
+        return true;
+      }
+
+      /**
+       * Update the subscription to the database through a callback.
+       */
+      function removeSubscriptionFromServer(key) {
+        var subscriptionData = JSON.stringify({
+          'key': key
+        });
+
+        $.ajax({
+          url: '/sw-subscription/remove',
+          type: 'POST',
+          data: subscriptionData,
+          dataType: 'json',
+          contentType: 'application/json;charset=utf-8',
+          async: true,
+          complete: function() {
+            toggleSwitcher(false, false);
+          }
+        });
+
         return true;
       }
 
@@ -262,10 +339,29 @@
       }
 
       /**
+       * Toggle the switch element to on, off or disabled.
+       *
+       * @param state
+       *   Boolean indicating if the element should be on or off.
+       * @param disabled
+       *   Boolean indicating if the element should be disabled or not.
+       */
+      function toggleSwitcher(state, disabled) {
+        if (typeof state !== 'undefined') {
+          toggleElement.attr('checked', state);
+          toggleElement.prop('checked', state);
+        }
+
+        if (typeof disabled !== 'undefined') {
+          toggleElement.attr('disabled', disabled);
+        }
+      }
+
+      /**
        * Turn off possibility to change Push notifications state for a user.
        */
       function blockSwitcher() {
-        $('#edit-push-notifications-current-device-current').attr('disabled', true);
+        toggleElement.attr('disabled', true);
         $('.blocked-notice').removeClass('hide');
         $('.social_pwa--overlay').remove();
       }

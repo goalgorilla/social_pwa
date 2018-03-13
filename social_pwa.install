@@ -101,4 +101,7 @@ function social_pwa_uninstall() {
 
   // Remove the VAPID keys on uninstall.
   \Drupal::state()->delete('social_pwa.vapid_keys');
+
+  // Delete all subscriptions.
+  \Drupal::service('user.data')->delete('social_pwa');
 }
