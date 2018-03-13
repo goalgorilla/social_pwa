@@ -177,7 +177,7 @@ function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state,
   // Target user.
   $uid = \Drupal::routeMatch()->getParameter('user')->id();
   // Current user.
-  $current_uid = Drupal::currentUser()->id();
+  $current_uid = \Drupal::currentUser()->id();
 
   // Hide the Push notifications fieldset if target and current user is not the
   // same.
