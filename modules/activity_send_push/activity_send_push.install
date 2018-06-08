@@ -8,60 +8,21 @@
 use Drupal\message\Entity\MessageTemplate;
 
 /**
- * Implements hook_install().
- */
-function activity_send_push_install() {
-  // Set push destination to given message templates.
-  _activity_send_push_prepare_destinations(TRUE);
-}
-
-/**
  * Implements hook_uninstall().
  */
 function activity_send_push_uninstall() {
-  // Delete push destination to given message templates.
-  _activity_send_push_prepare_destinations();
-}
-
-/**
- * Prepare push destination to given message templates.
- */
-function _activity_send_push_prepare_destinations($set = FALSE) {
-  // At installation we'll try to add the activity destination to the common
-  // message templates.
-  if ($set) {
-    $message_templates = [
-      'create_post_profile',
-      'create_mention_post',
-      'create_mention_comment',
-      'create_comment_reply_mention',
-      'create_comment_reply',
-      'create_comment_post_profile',
-      'create_like_node_or_post',
-      'create_comment_author_node_post',
-      'create_comment_following_node',
-      'create_content_in_joined_group',
-    ];
-  }
-  else {
-    // At uninstall remove it from every message template.
-    $message_templates = array_keys(MessageTemplate::loadMultiple());
-  }
+  // At uninstall remove it from every message template.
+  $message_templates = array_keys(MessageTemplate::loadMultiple());
 
   $key = 'third_party_settings.activity_logger.activity_destinations';
 
   foreach ($message_templates as $message_template) {
     /* @var \Drupal\Core\Config\Config $config */
     $config = \Drupal::configFactory()->getEditable('message.template.' . $message_template);
-
     $activity_destinations = $config->get($key);
 
-    if ($set) {
-      $activity_destinations['push'] = 'push';
-    }
-    else {
-      unset($activity_destinations['push']);
-    }
+    // Remove the push destination from the message template.
+    unset($activity_destinations['push']);
 
     $config->set($key, $activity_destinations)->save();
   }
