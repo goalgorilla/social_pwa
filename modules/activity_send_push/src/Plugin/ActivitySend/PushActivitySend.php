@@ -18,9 +18,10 @@ class PushActivitySend extends ActivitySendBase {
    * {@inheritdoc}
    */
   public function create($entity) {
-    $data['entity_id'] = $entity->id();
-    $queue = \Drupal::queue('activity_send_email_worker');
-    $queue->createItem($data);
+    // @todo figure out if we need this plugin at all.
+    // $data['entity_id'] = $entity->id();
+    // $queue = \Drupal::queue('activity_send_email_worker');
+    // $queue->createItem($data);
   }
 
 }
