@@ -37,14 +37,23 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
       $message = $message_loaded->getText();
 
       $message_to_send = '';
-      if (empty($message)) {
-        $message_to_send = 'test content';
-      }
       if (!empty($message[0])) {
         $message_to_send = $message[0];
       }
 
+      // Get subscription object of the selected user.
+      $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
+
+      if (empty($user_subscription)) {
+        return;
+      }
+      if ($message_to_send === '') {
+        \Drupal::logger('activity_send_push')->error('Tried to send an empty push notification for mid: %mid', ['%mid' => $activity->field_activity_message->target_id]);
+        return;
+      }
+
       // Set fields for payload.
+      $message_to_send = html_entity_decode($message_to_send);
       $fields = [
         'message' => strip_tags($message_to_send),
         'url' => $activity->getRelatedEntityUrl()->toString(),
@@ -63,13 +72,6 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
 
       // Encode payload.
       $payload = json_encode($fields);
-
-      // Get subscription object of the selected user.
-      $user_subscription = \Drupal::service('user.data')->get('social_pwa', $uid, 'subscription');
-
-      if (empty($user_subscription)) {
-        return;
-      }
 
       $notifications = [];
       foreach ($user_subscription as $subscription) {
