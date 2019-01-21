@@ -39,11 +39,11 @@ self.addEventListener('push', function (event) {
         }
         // The page is still open but unfocused, so focus the tab.
         else if (clientList.length > 0) {
-          sendNotification(data.message, data.icon, data.url);
+          return sendNotification(data.message, data.icon, data.url);
         }
         // The page is closed, send a push to retain engagement.
         else {
-          sendNotification(data.message, data.icon, data.url);
+          return sendNotification(data.message, data.icon, data.url);
         }
       })
     );
