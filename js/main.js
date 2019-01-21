@@ -155,7 +155,10 @@
           Drupal.t('Enable') +
           '</button></div></div>';
 
-        $('body').append(html);
+        // Check if the prompt exists, otherwise append it.
+        if ($('#social_pwa--prompt').length === 0) {
+          $('body').append(html);
+        }
 
         var pushNotificationsDialog = Drupal.dialog($('#social_pwa--prompt'), {
           dialogClass: 'ui-dialog_push-notification',
