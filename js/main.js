@@ -156,7 +156,7 @@
           '</button></div></div>';
 
         // Check if the prompt exists, otherwise append it.
-        if ($('#social_pwa--prompt').length < 0) {
+        if ($('#social_pwa--prompt').length === 0) {
           $('body').append(html);
         }
 
