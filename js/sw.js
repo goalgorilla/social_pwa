@@ -11,8 +11,8 @@ self.addEventListener('push', function (event) {
     return;
   }
 
-  var sendNotification = function(payload, icon, url) {
-    var title = "Open Social";
+  var sendNotification = function(payload, icon, url, site_name) {
+    var title = site_name || "Open Social";
     icon = icon || '/sites/default/files/images/touch/open-social.png';
     payload = payload || 'You\'ve received a message!';
     return self.registration.showNotification(title, {
@@ -39,11 +39,11 @@ self.addEventListener('push', function (event) {
         }
         // The page is still open but unfocused, so focus the tab.
         else if (clientList.length > 0) {
-          return sendNotification(data.message, data.icon, data.url);
+          return sendNotification(data.message, data.icon, data.url, data.site_name);
         }
         // The page is closed, send a push to retain engagement.
         else {
-          return sendNotification(data.message, data.icon, data.url);
+          return sendNotification(data.message, data.icon, data.url, data.site_name);
         }
       })
     );

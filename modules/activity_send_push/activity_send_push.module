@@ -52,14 +52,17 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         return;
       }
 
+      $pwa_settings = \Drupal::config('social_pwa.settings');
+
       // Set fields for payload.
       $message_to_send = html_entity_decode($message_to_send);
       $fields = [
         'message' => strip_tags($message_to_send),
         'url' => $activity->getRelatedEntityUrl()->toString(),
+        'site_name' => $pwa_settings->get('name'),
       ];
 
-      $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+      $icon = $pwa_settings->get('icons.icon');
       if (!empty($icon)) {
         // Get the file id and path.
         $fid = $icon[0];
