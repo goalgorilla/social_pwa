@@ -91,8 +91,6 @@ class ManifestSettingsForm extends ConfigFormBase {
     $config = $this->config('social_pwa.settings');
     // Get the specific icons. Needed to get the correct path of the file.
     $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
-    // Get the file id and path.
-    $fid = $icon[0];
 
     // Start form.
     $form['social_pwa_manifest_settings'] = [
@@ -132,7 +130,7 @@ class ManifestSettingsForm extends ConfigFormBase {
       '#type' => 'managed_file',
       '#title' => $this->t('General App Icon'),
       '#description' => $this->t('Provide a square (.png) image. This image serves as your icon when the user adds the website to their home screen. <i>Minimum dimensions are 512px by 512px.</i>'),
-      '#default_value' => [$fid],
+      '#default_value' => $icon ?: [],
       '#required' => TRUE,
       '#upload_location' => file_default_scheme() . '://images/touch/',
       '#upload_validators' => [
