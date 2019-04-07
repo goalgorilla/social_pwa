@@ -112,7 +112,7 @@ class PushNotificationForm extends FormBase {
       // Prepare the payload with the message.
       $message = $form_state->getValue('message');
       $title = $form_state->getValue('title');
-
+      $pwa_settings = \Drupal::config('social_pwa.settings');
       $icon = $pwa_settings->get('icons.icon');
       if (!empty($icon)) {
         // Get the file id and path.
