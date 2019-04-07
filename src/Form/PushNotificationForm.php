@@ -76,7 +76,7 @@ class PushNotificationForm extends FormBase {
         '#title' => $this->t('Title'),
         '#size' => 47,
         '#default_value' => 'Open Social',
-        '#description' => $this->t('This will be the <b>title</b> of the Push Notification. <i>(Static value for now)</i>'),
+        '#description' => $this->t('This will be the <b>title</b> of the Push Notification.'),
       ];
       $form['push_notification']['message'] = [
         '#type' => 'textfield',
@@ -124,7 +124,7 @@ class PushNotificationForm extends FormBase {
         $icon = file_url_transform_relative($path);
       }
 
-      $payload = json_encode(['message' => $message, 'title' => $title, 'icon' => $icon]);
+      $payload = json_encode(['message' => $message, 'site_name' => $title, 'icon' => $icon]);
 
       // Array of notifications.
       $notifications = [];
