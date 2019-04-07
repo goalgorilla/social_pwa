@@ -5,6 +5,7 @@ namespace Drupal\social_pwa\Form;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Url;
+use Drupal\file\Entity\File;
 use Drupal\user\Entity\User;
 use Minishlink\WebPush\WebPush;
 
@@ -75,7 +76,6 @@ class PushNotificationForm extends FormBase {
         '#title' => $this->t('Title'),
         '#size' => 47,
         '#default_value' => 'Open Social',
-        '#disabled' => TRUE,
         '#description' => $this->t('This will be the <b>title</b> of the Push Notification. <i>(Static value for now)</i>'),
       ];
       $form['push_notification']['message'] = [
@@ -111,7 +111,20 @@ class PushNotificationForm extends FormBase {
 
       // Prepare the payload with the message.
       $message = $form_state->getValue('message');
-      $payload = json_encode(['message' => $message]);
+      $title = $form_state->getValue('title');
+
+      $icon = $pwa_settings->get('icons.icon');
+      if (!empty($icon)) {
+        // Get the file id and path.
+        $fid = $icon[0];
+        /** @var \Drupal\file\Entity\File $file */
+        $file = File::load($fid);
+        $path = $file->url();
+
+        $icon = file_url_transform_relative($path);
+      }
+
+      $payload = json_encode(['message' => $message, 'title' => $title, 'icon' => $icon]);
 
       // Array of notifications.
       $notifications = [];
