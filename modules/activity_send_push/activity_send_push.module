@@ -52,13 +52,22 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         return;
       }
 
+      $url = $activity->getRelatedEntityUrl();
+      // If the related entity does not have a canonical URL then we don't have
+      // anywhere for the user to go to when they click the push notification so
+      // we shouldn't send a notification at all.
+      if (!($url instanceof Url)) {
+        \Drupal::logger('activity_send_push')->error("Tried to send push notification for mid: %mid but the target entity doesn't have a canonical url", ['%mid' => $activity->field_activity_message->target_id]);
+        return;
+      }
+
       $pwa_settings = \Drupal::config('social_pwa.settings');
 
       // Set fields for payload.
       $message_to_send = html_entity_decode($message_to_send);
       $fields = [
         'message' => strip_tags($message_to_send),
-        'url' => $activity->getRelatedEntityUrl()->toString(),
+        'url' => $url->toString(),
         'site_name' => $pwa_settings->get('name'),
       ];
 
