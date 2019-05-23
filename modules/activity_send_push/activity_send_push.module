@@ -117,7 +117,13 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         );
       }
 
+      // Flush it.
       $webPush->flush();
+
+      // If the flush is returning an errorCode.
+      if (is_array($webPush->flush()) && array_key_exists('errorCode', $webPush->flush())) {
+        print_r($webPush->flush());
+      }
 
     }
   }
