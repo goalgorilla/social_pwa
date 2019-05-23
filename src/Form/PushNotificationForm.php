@@ -148,6 +148,22 @@ class PushNotificationForm extends FormBase {
       }
 
       $webPush->flush();
+      var_dump('Right after flush: ', $webPush->flush());
+
+      $subscription_data = json_decode(\Drupal::request()->getContent(), TRUE);
+      var_dump('Right after flush - request subscription data: ', $subscription_data);
+
+      // If the flush is returning an errorCode.
+      if (is_array($webPush->flush()) && array_key_exists('errorCode', $webPush->flush())) {
+        var_dump('On error - flush data: ', $webPush->flush());
+        // Decode the content.
+        $subscription_data = json_decode(\Drupal::request()->getContent(), TRUE);
+        var_dump('On error - request subscription data: ', $subscription_data);
+
+        // Get the user data.
+        $all_subscriptions = \Drupal::service('user.data')->get('social_pwa', 'subscription');
+        var_dump('On error - request subscription data: ', $all_subscriptions);
+      }
 
     }
     drupal_set_message($this->t('Message was successfully sent!'));
