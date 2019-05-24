@@ -94,6 +94,9 @@ class PushNotificationForm extends FormBase {
         '#button_type' => 'primary',
       ];
     }
+
+    dpm(\Drupal::service('user.data')->get('social_pwa', 'subscription'));
+
     return $form;
   }
 
@@ -152,6 +155,10 @@ class PushNotificationForm extends FormBase {
 
       $subscription_data = json_decode(\Drupal::request()->getContent(), TRUE);
       var_dump('Right after flush - request subscription data: ', $subscription_data);
+
+      // Get the user data.
+      $all_subscriptions = \Drupal::service('user.data')->get('social_pwa', 'subscription');
+      var_dump('On error - request subscription data: ', $all_subscriptions);
 
       // If the flush is returning an errorCode.
       if (is_array($webPush->flush()) && array_key_exists('errorCode', $webPush->flush())) {
