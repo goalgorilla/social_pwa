@@ -4,8 +4,6 @@ namespace Drupal\social_pwa\Plugin\Push;
 
 use Drupal\activity_send_push_notification\PushBase;
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\social_pwa\BrowserDetector;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -18,16 +16,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   title = @Translation("Current device"),
  * )
  */
-class PwaPush extends PushBase implements ContainerFactoryPluginInterface {
-
-  use StringTranslationTrait;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
+class PwaPush extends PushBase {
 
   /**
    * TRUE if target and current user is the same.
@@ -63,11 +52,14 @@ class PwaPush extends PushBase implements ContainerFactoryPluginInterface {
     $route_user_id,
     $current_user_id
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    parent::__construct(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $string_translation,
+      $config_factory
+    );
 
-    $this->setStringTranslation($string_translation);
-
-    $this->configFactory = $config_factory;
     $this->isValidUser = $route_user_id === $current_user_id;
   }
 
