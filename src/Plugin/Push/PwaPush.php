@@ -38,10 +38,10 @@ class PwaPush extends PushBase {
    *   The string translation service.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The configuration factory.
-   * @param int $route_user_id
-   *   The user ID from route parameters.
    * @param int $current_user_id
    *   The current active user ID.
+   * @param int $route_user_id
+   *   The user ID from route parameters.
    */
   public function __construct(
     array $configuration,
@@ -49,15 +49,16 @@ class PwaPush extends PushBase {
     $plugin_definition,
     TranslationInterface $string_translation,
     ConfigFactoryInterface $config_factory,
-    $route_user_id,
-    $current_user_id
+    $current_user_id,
+    $route_user_id
   ) {
     parent::__construct(
       $configuration,
       $plugin_id,
       $plugin_definition,
       $string_translation,
-      $config_factory
+      $config_factory,
+      $current_user_id
     );
 
     $this->isValidUser = $route_user_id === $current_user_id;
@@ -78,35 +79,42 @@ class PwaPush extends PushBase {
       $plugin_definition,
       $container->get('string_translation'),
       $container->get('config.factory'),
-      $container->get('current_route_match')->getRawParameter('user'),
-      $container->get('current_user')->id()
+      $container->get('current_user')->id(),
+      $container->get('current_route_match')->getRawParameter('user')
     );
   }
 
   /**
    * {@inheritdoc}
    */
-  public function form() {
-    $form = parent::form();
-
+  public function access() {
     $config = $this->configFactory->get('social_pwa.settings');
 
     if (!$push_enabled = $config->get('status.all')) {
-      return $form;
+      return FALSE;
     }
 
     // Hide the Push notifications fieldset if target and current user is not
     // the same.
     if (!$this->isValidUser) {
-      return $form;
+      return FALSE;
     }
 
     // Get the uploaded icon.
     $icon = $config->get('icons.icon');
 
     if ($icon === NULL || !isset($icon[0])) {
-      return $form;
+      return FALSE;
     }
+
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildForm() {
+    $form = parent::buildForm();
 
     // Get the device and subscription information about this user.
     $useragent = $_SERVER['HTTP_USER_AGENT'];
