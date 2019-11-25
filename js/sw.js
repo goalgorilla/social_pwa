@@ -71,8 +71,10 @@ self.addEventListener('notificationclick', function(event) {
 });
 
 self.addEventListener('fetch', function(event) {
-  // Cache this page so the homescreen install banner works.
-  if ('cache' in self) {
-    cache.put('/');
-  }
+  // This event listener exists as a requirement for the 
+  // "Add to Homepage" function to work.
+  // See: https://developers.google.com/web/fundamentals/app-install-banners
+  // At this point it's been intentionally left blank 
+  // because caching the homepage does not sufficiently
+  // differentiate between the AN and LU states.
 });
