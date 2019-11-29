@@ -117,7 +117,31 @@ function activity_send_push_activity_insert(ActivityInterface $activity) {
         );
       }
 
-      $webPush->flush();
+      // Send out all the push notifications.
+      $push_results = $webPush->flush();
+
+      $removed = FALSE;
+      // Loop through the push results.
+      foreach ($push_results as $push_result) {
+        // If we had any results back that we're unsuccessful, we should act and
+        // remove the push subscription endpoint.
+        if (empty($push_result['success'])) {
+          // Loop through the users subscriptions.
+          foreach ($user_subscription as $key => $subscription) {
+            // Remove from list of subscriptions, as the endpoint is no longer
+            // being used.
+            if ($subscription['endpoint'] === $push_result['endpoint']) {
+              unset($user_subscription[$key]);
+              $removed = TRUE;
+            }
+          }
+        }
+      }
+
+      // Update the users subscriptions if we removed something from the list.
+      if ($removed) {
+        \Drupal::service('user.data')->set('social_pwa', $uid, 'subscription', $user_subscription);
+      }
 
     }
   }
