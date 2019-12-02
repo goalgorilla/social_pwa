@@ -5,8 +5,10 @@
  * Generates and attaches the <meta> and <link> tags needed for the PWA.
  */
 
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\file\Entity\File;
 use Drupal\image\Entity\ImageStyle;
+use Drupal\social_pwa\BrowserDetector;
 
 /**
  * Implements hook_page_attachments().
@@ -157,4 +159,141 @@ function social_pwa_page_attachments(array &$page) {
     $page['#attached']['drupalSettings']['pushNotificationPrompt'] = TRUE;
     $page['#attached']['drupalSettings']['pushNotificationPromptTime'] = (isset($prompt_time) && is_numeric($prompt_time)) ? $prompt_time : 3;
   }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function social_pwa_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  if ($form_id == 'user_register_form') {
+    return;
+  }
+
+  $push_enabled = \Drupal::config('social_pwa.settings')->get('status.all');
+  if (!$push_enabled) {
+    return;
+  }
+
+  // Target user.
+  $uid = \Drupal::routeMatch()->getParameter('user')->id();
+  // Current user.
+  $current_uid = \Drupal::currentUser()->id();
+
+  // Hide the Push notifications fieldset if target and current user is not the
+  // same.
+  if ($uid !== $current_uid) {
+    return;
+  }
+
+  // Get the device and subscription information about this user.
+  $useragent = $_SERVER['HTTP_USER_AGENT'];
+  // Browser detector.
+  $bd = new BrowserDetector($useragent);
+  // The device type for the icon.
+  $device_type = $bd->getDeviceType();
+  // The device/browser description.
+  $device_description = $bd->getFormattedDescription();
+
+  // Get the uploaded icon.
+  $icon = \Drupal::config('social_pwa.settings')->get('icons.icon');
+
+  if ($icon === NULL || !isset($icon[0])) {
+    return;
+  }
+
+  $form['push_notifications'] = [
+    '#type' => 'fieldset',
+    '#title' => t('Push notifications'),
+    '#tree' => TRUE,
+    '#attributes' => [
+      'class' => ['form-horizontal'],
+    ],
+  ];
+  $form['push_notifications']['description'] = [
+    '#markup' => t('Show notifications in the corner of your computer screen, even if the website is closed.'),
+  ];
+  $form['push_notifications']['current_device'] = [
+    '#type' => 'details',
+    '#title' => t('<h5>Current device</h5>'),
+    '#attributes' => [
+      'class' => ['form-fieldset'],
+    ],
+  ];
+
+  // Prepare the toggle element. We determine default value in the frontend.
+  $form['push_notifications']['current_device']['toggle'] = [
+    '#type' => 'checkbox',
+    '#title' => '<span class="control-label__icon--bg icon-' . $device_type . '"></span>' . $device_description,
+    '#disabled' => FALSE,
+    '#default_value' => FALSE,
+    '#attributes' => [
+      'data-switch' => TRUE,
+    ],
+  ];
+
+  // Get the help text for enabling push notifications per (major) browser.
+  switch ($bd->getBrowserName()) {
+    case 'Chrome':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3D';
+
+      $operating_systems = ['Android', 'iOS'];
+      $operating_system = $bd->getOsName();
+
+      if (in_array($operating_system, $operating_systems)) {
+        $url .= $operating_system;
+      }
+      else {
+        $url .= 'Desktop';
+      }
+
+      $url .= '&oco=1';
+      break;
+
+    case 'Chrome Mobile':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DAndroid&oco=1';
+      break;
+
+    case 'Chrome Mobile iOS':
+      $url = 'https://support.google.com/chrome/answer/3220216?co=GENIE.Platform%3DiOS&oco=1';
+      break;
+
+    case 'Firefox':
+    case 'Firefox Focus':
+    case 'Firefox Mobile':
+      $url = 'https://support.mozilla.org/en-US/kb/push-notifications-firefox';
+      break;
+
+    case 'Microsoft Edge':
+      $url = 'https://blogs.windows.com/msedgedev/2016/05/16/web-notifications-microsoft-edge';
+      break;
+
+    case 'Opera':
+    case 'Opera Mini':
+    case 'Opera Mobile':
+    case 'Opera Next':
+      $url = 'http://help.opera.com/opera/Windows/1656/en/controlPages.html#manageNotifications';
+      break;
+  }
+
+  // Prepare the text. If we have an url we can point the user in the right
+  // direction.
+  if (isset($url)) {
+    $text = t('You have denied receiving push notifications through your browser. Please <a href="@url" target="_blank">reset your browser setting</a> for receiving notifications.', [
+      '@url' => $url,
+    ]);
+  }
+  else {
+    $text = t('You have denied receiving push notifications through your browser. Please reset your browser setting for receiving notifications.');
+  }
+
+  // Prepare the blocked notice element with the help text.
+  $form['push_notifications']['current_device']['blocked_notice'] = [
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#attributes' => [
+      'class' => ['help-block', 'blocked-notice', 'hide'],
+    ],
+    '#value' => $text,
+  ];
+
 }
