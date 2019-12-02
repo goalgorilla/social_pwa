@@ -76,15 +76,6 @@ function social_pwa_requirements($phase) {
 }
 
 /**
- * Install the "Activity Send Push Notification" module.
- */
-function social_pwa_update_8001() {
-  \Drupal::service('module_installer')->install([
-    'activity_send_push_notification',
-  ]);
-}
-
-/**
  * Implements hook_uninstall().
  */
 function social_pwa_uninstall() {

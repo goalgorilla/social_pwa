@@ -7,7 +7,7 @@ use Drupal\Core\Config\ConfigFactoryOverrideInterface;
 use Drupal\Core\Config\StorageInterface;
 
 /**
- * Class MessageTemplatesOverrides.
+ * Class MessageTemplatesOverrides
  *
  * @package Drupal\activity_send_push
  */
@@ -33,7 +33,6 @@ class MessageTemplatesOverrides implements ConfigFactoryOverrideInterface {
    * Templates we need to add the 'web push' destination to.
    *
    * @return array
-   *   The list of templates.
    */
   protected function getTemplates() {
     return [
