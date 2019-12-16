@@ -14,6 +14,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @Push(
  *   id = "pwa_push",
  *   title = @Translation("Current device"),
+ *   description = @Translation("Show notifications in the corner of your computer screen, even if the website is closed."),
  * )
  */
 class PwaPush extends PushBase {
