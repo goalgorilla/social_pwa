@@ -5,5 +5,5 @@ core: 8.x
 package: Social
 configure: social_pwa.settings
 dependencies:
-  - social:activity_send_push_notification
+  - activity_send_push_notification
   - social_pwa:activity_send_push
