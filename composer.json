@@ -4,7 +4,7 @@
   "type": "drupal-module",
   "license": "GPL-2.0+",
   "require": {
-    "drupal/social": "^7.2",
+    "drupal/social": ">=7.2",
     "minishlink/web-push": "^2.0",
     "piwik/device-detector": "^3.0"
   }
