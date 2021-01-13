@@ -47,6 +47,7 @@ class MessageTemplatesOverrides implements ConfigFactoryOverrideInterface {
       'message.template.create_comment_author_node_post',
       'message.template.create_comment_following_node',
       'message.template.create_content_in_joined_group',
+      'message.template.create_private_message',
     ];
   }
 
