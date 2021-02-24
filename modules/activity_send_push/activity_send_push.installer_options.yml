@@ -1,2 +1,2 @@
-name: Activity Send Web Push
-description: Used to send activity notifications by Web Push.
+name: Push Notifications (Web)
+description: Enables the delivering user notifications as web push notifications.
